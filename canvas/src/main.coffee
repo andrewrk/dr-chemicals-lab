@@ -1,35 +1,8 @@
+#depend "chem"
+
+{Vec2d, Engine, Sprite, Batch} = Chem
+
 do ->
-  #canvas = document.getElementById("game")
-  #engine = new Engine(canvas)
-  #batch = new Engine.Batch()
-  #sprite = new Engine.Sprite('walk', batch: batch, pos: new Vec2d(200, 200))
-  #engine.on 'update', ->
-  #  if engine.buttonJustPressed Engine.Button.Key_1
-  #    console.log "press 1"
-  #    sprite.scale.x = -1
-  #  else if engine.buttonJustPressed Engine.Button.Key_2
-  #    console.log "press 2"
-  #    sprite.scale.x = 1
-  #  else if engine.buttonJustPressed Engine.Button.Key_3
-  #    sprite.scale.x = -2
-  #  else if engine.buttonJustPressed Engine.Button.Key_4
-  #    sprite.scale.x = 2
-  #  else if engine.buttonJustPressed Engine.Button.Key_Space
-  #    sprite.setVisible(not sprite.visible)
-
-  #  if engine.buttonState(Engine.Button.Mouse_Left)
-  #    sprite.pos = engine.mousePos()
-  #  if engine.buttonState(Engine.Button.Mouse_Right)
-  #    sprite.rotation += 3.14 / 20
-
-  #engine.on 'draw', (context) ->
-  #  engine.clear()
-  #  engine.draw(batch)
-  #  engine.drawFps()
-  #engine.start()
-
-  #return
-
   atom_size = new Vec2d(32, 32)
   atom_radius = atom_size.x / 2
 
@@ -282,9 +255,9 @@ do ->
 
       @min_power = params.power or 3
 
-      @sprite_arm = new Engine.Sprite('arm', batch: @game.batch, zorder: @game.group_fg)
-      @sprite_man = new Engine.Sprite('still', batch: @game.batch, zorder: @game.group_main)
-      @sprite_claw = new Engine.Sprite('claw', batch: @game.batch, zorder: @game.group_main)
+      @sprite_arm = new Sprite('arm', batch: @game.batch, zorder: @game.group_fg)
+      @sprite_man = new Sprite('still', batch: @game.batch, zorder: @game.group_main)
+      @sprite_claw = new Sprite('claw', batch: @game.batch, zorder: @game.group_main)
 
       @space = new cp.Space()
       @space.gravity = new Vec2d(0, -400)
@@ -330,7 +303,7 @@ do ->
       @lose_ratio = 95 / 300
 
       @tank_index ?= randInt(0, 1)
-      @sprite_tank = new Engine.Sprite("tank#{@tank_index}", batch:@game.batch, zorder:@game.group_main)
+      @sprite_tank = new Sprite("tank#{@tank_index}", batch:@game.batch, zorder:@game.group_main)
 
       @game_over = false
       @winner = null
@@ -362,28 +335,28 @@ do ->
 
     initControls: =>
       @controls = {}
-      @controls[Engine.Button.Key_A] = Control.MoveLeft
-      @controls[Engine.Button.Key_D] = Control.MoveRight
-      @controls[Engine.Button.Key_W] = Control.MoveUp
-      @controls[Engine.Button.Key_S] = Control.MoveDown
+      @controls[Chem.Button.Key_A] = Control.MoveLeft
+      @controls[Chem.Button.Key_D] = Control.MoveRight
+      @controls[Chem.Button.Key_W] = Control.MoveUp
+      @controls[Chem.Button.Key_S] = Control.MoveDown
 
-      @controls[Engine.Button.Key_1] = Control.SwitchToGrapple
-      @controls[Engine.Button.Key_2] = Control.SwitchToRay
-      @controls[Engine.Button.Key_3] = Control.SwitchToLazer
+      @controls[Chem.Button.Key_1] = Control.SwitchToGrapple
+      @controls[Chem.Button.Key_2] = Control.SwitchToRay
+      @controls[Chem.Button.Key_3] = Control.SwitchToLazer
 
-      @controls[Engine.Button.Mouse_Left] = Control.FireMain
-      @controls[Engine.Button.Mouse_Right] = Control.FireAlt
+      @controls[Chem.Button.Mouse_Left] = Control.FireMain
+      @controls[Chem.Button.Mouse_Right] = Control.FireAlt
 
       if params.keyboard is 'dvorak'
-        @controls[Engine.Button.Key_A] = Control.MoveLeft
-        @controls[Engine.Button.Key_E] = Control.MoveRight
-        @controls[Engine.Button.Key_Comma] = Control.MoveUp
-        @controls[Engine.Button.Key_S] = Control.MoveDown
+        @controls[Chem.Button.Key_A] = Control.MoveLeft
+        @controls[Chem.Button.Key_E] = Control.MoveRight
+        @controls[Chem.Button.Key_Comma] = Control.MoveUp
+        @controls[Chem.Button.Key_S] = Control.MoveDown
       else if params.keyboard is 'colemak'
-        @controls[Engine.Button.Key_A] = Control.MoveLeft
-        @controls[Engine.Button.Key_S] = Control.MoveRight
-        @controls[Engine.Button.Key_W] = Control.MoveUp
-        @controls[Engine.Button.Key_R] = Control.MoveDown
+        @controls[Chem.Button.Key_A] = Control.MoveLeft
+        @controls[Chem.Button.Key_S] = Control.MoveRight
+        @controls[Chem.Button.Key_W] = Control.MoveUp
+        @controls[Chem.Button.Key_R] = Control.MoveDown
 
       @let_go_of_fire_main = true
       @let_go_of_fire_alt = true
@@ -414,7 +387,7 @@ do ->
             body.applyImpulse(direction.scaled(power * damp), new Vec2d(0,0))
 
           # explosion animation
-          sprite = new Engine.Sprite("bombsplode", batch:@game.batch, zorder:@game.group_fg)
+          sprite = new Sprite("bombsplode", batch:@game.batch, zorder:@game.group_fg)
           sprite.pos = @pos.plus(bomb.shape.body.p)
           removeBombSprite = null
           sprite.on "animation_end", do (sprite) => => sprite.delete()
@@ -549,7 +522,7 @@ do ->
     dropBomb: =>
       # drop a bomb
       pos = @getDropPos(Bomb.size)
-      sprite = new Engine.Sprite('bomb', batch: @game.batch, zorder: @game.group_main)
+      sprite = new Sprite('bomb', batch: @game.batch, zorder: @game.group_main)
       timeout = randInt(1, 5)
       bomb = new Bomb(pos, sprite, @space, timeout)
       @bombs.add(bomb)
@@ -557,7 +530,7 @@ do ->
     dropRock: =>
       # drop a rock
       pos = @getDropPos(Rock.size)
-      sprite = new Engine.Sprite('rock', batch: @game.batch, zorder: @game.group_main)
+      sprite = new Sprite('rock', batch: @game.batch, zorder: @game.group_main)
       rock = new Rock(pos, sprite, @space)
       @rocks.add(rock)
 
@@ -570,7 +543,7 @@ do ->
         # drop a random atom
         flavor_index = randInt(0, Atom.flavor_count-1)
         pos = @getDropPos(atom_size)
-        atom = new Atom(pos, flavor_index, new Engine.Sprite(@game.atom_imgs[flavor_index], batch: @game.batch, zorder: @game.group_main), @space)
+        atom = new Atom(pos, flavor_index, new Sprite(@game.atom_imgs[flavor_index], batch: @game.batch, zorder: @game.group_main), @space)
         @atoms.add(atom)
 
 
@@ -1035,13 +1008,13 @@ do ->
     constructor: (@gw, @engine, @server) ->
       @debug = params.debug?
 
-      @batch = new Engine.Batch()
+      @batch = new Batch()
       @group_bg = 0
       @group_main = 1
       @group_fg = 2
 
-      @sprite_bg = new Engine.Sprite("bg", batch: @batch, zorder: @group_bg)
-      @sprite_bg_top = new Engine.Sprite("bg_top", batch: @batch, zorder: @group_fg)
+      @sprite_bg = new Sprite("bg", batch: @batch, zorder: @group_bg)
+      @sprite_bg_top = new Sprite("bg_top", batch: @batch, zorder: @group_fg)
 
       @atom_imgs = ("atom#{i}" for i in [0...Atom.flavor_count])
 
@@ -1083,7 +1056,7 @@ do ->
 
         tank_index = 1 - @control_tank.tank_index
         tank_name = "tank#{tank_index}"
-        @sprite_other_tank = new Engine.Sprite(tank_name, batch: @batch, zorder: @group_main, pos: new Vec2d(tank_pos[1].x + @control_tank.size.x / 2, tank_pos[1].y + @control_tank.size.y / 2))
+        @sprite_other_tank = new Sprite(tank_name, batch: @batch, zorder: @group_main, pos: new Vec2d(tank_pos[1].x + @control_tank.size.x / 2, tank_pos[1].y + @control_tank.size.y / 2))
         @sprite_other_tank.pos.y = 600 - @sprite_other_tank.pos.y
       else
         @tanks = (new Tank(pos, tank_dims, this, i) for pos, i in tank_pos)
@@ -1194,8 +1167,8 @@ do ->
 
   class ControlsScene
     constructor: (@gw, @engine) ->
-      @batch = new Engine.Batch()
-      @img = new Engine.Sprite("howtoplay", batch: @batch)
+      @batch = new Batch()
+      @img = new Sprite("howtoplay", batch: @batch)
       @engine.on('draw', @draw)
       @engine.on('mousedown', @onMouseDown)
 
@@ -1213,8 +1186,8 @@ do ->
 
   class Credits
     constructor: (@gw, @engine) ->
-      @batch = new Engine.Batch()
-      @img = new Engine.Sprite("credits", batch: @batch)
+      @batch = new Batch()
+      @img = new Sprite("credits", batch: @batch)
       @engine.on('draw', @draw)
       @engine.on('mousedown', @onMouseDown)
 
@@ -1237,8 +1210,8 @@ do ->
       @engine.on 'draw', @draw
       @engine.on 'update', @update
 
-      @batch = new Engine.Batch()
-      @img = new Engine.Sprite("title", batch: @batch)
+      @batch = new Batch()
+      @img = new Sprite("title", batch: @batch)
 
       @start_pos = new Vec2d(409, 600-305)
       @credits_pos = new Vec2d(360, 600-229)
@@ -1353,7 +1326,8 @@ do ->
     cp.Vect.prototype[prop] = val
 
   canvas = document.getElementById("game")
-  engine = new Engine(canvas)
-  w = new GameWindow(engine, null)
-  w.title()
-  engine.start()
+  Chem.onReady ->
+    engine = new Engine(canvas)
+    w = new GameWindow(engine, null)
+    w.title()
+    engine.start()

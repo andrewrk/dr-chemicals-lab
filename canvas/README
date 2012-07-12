@@ -1,15 +1,7 @@
-set up dev environment:
+developing:
 
-    sudo apt-get install libcairo2-dev
-    npm install .
-    
-while developing:
-
-    cake watch
-    # when you change assets
-    cake spritesheet
-    # run simple server to serve the assets
-    npm test
+    sudo npm install -g chem
+    chem dev
 
 things left to fix:
 
