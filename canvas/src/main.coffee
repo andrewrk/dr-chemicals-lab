@@ -1,4 +1,5 @@
 #depend "chem"
+#depend "cp" bare
 
 {Vec2d, Engine, Sprite, Batch} = Chem
 

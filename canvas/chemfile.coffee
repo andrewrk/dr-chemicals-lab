@@ -1,6 +1,12 @@
 {Vec2d} = require("chem")
 v = (x, y) -> new Vec2d(x, y)
 
+exports.libs = [
+  'public/vendor'
+]
+
+exports.main = 'src/main'
+
 exports._default =
   delay: 1
   loop: true
