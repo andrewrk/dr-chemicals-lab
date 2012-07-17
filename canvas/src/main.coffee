@@ -554,7 +554,7 @@ class Tank
     @winner = false
     @explode_atoms(@atoms.clone(), "atomfail")
 
-    @sprite_man.setAnimation "defeat"
+    @sprite_man.setAnimationName "defeat"
     @sprite_arm.setVisible false
 
     @retract_claw()
@@ -571,7 +571,7 @@ class Tank
     @winner = true
     @explode_atoms(@atoms.clone())
 
-    @sprite_man.setAnimation "victory"
+    @sprite_man.setAnimationName "victory"
     @sprite_arm.setVisible false
 
     @retract_claw()
@@ -589,7 +589,7 @@ class Tank
     atom.marked_for_deletion = true
     clearSprite = =>
       @removeAtom(atom)
-    atom.sprite.setAnimation animation_name
+    atom.sprite.setAnimationName animation_name
     atom.sprite.set_handler("on_animation_end", clear_sprite)
 
 
@@ -646,7 +646,7 @@ class Tank
 
     if @control_state[Control.MoveUp] and grounded
       animation_name = "jump"
-      @sprite_man.setAnimation(animation_name)
+      @sprite_man.setAnimationName(animation_name)
       if negate then @sprite_man.scale.x = -1
       @man.body.velocity.y = 100
       @man.body.applyImpulse(new Vec2d(0, 2000), new Vec2d(0, 0))
@@ -658,7 +658,7 @@ class Tank
 
     # point the man+arm in direction of mouse
     if @sprite_man.animation isnt animation_name
-      @sprite_man.setAnimation animation_name
+      @sprite_man.setAnimationName animation_name
     if negate then @sprite_man.scale.x = -1
 
     # selecting a different gun
@@ -682,7 +682,7 @@ class Tank
       arm_animation = @gun_animations[@equipped_gun]
 
     if @sprite_arm.animation isnt arm_animation
-      @sprite_arm.setAnimation arm_animation
+      @sprite_arm.setAnimationName arm_animation
     if negate then @sprite_arm.scale.x = -1
 
     if @equipped_gun is Control.SwitchToGrapple
@@ -858,7 +858,7 @@ class Tank
       return
     @claw_in_motion = false
     @sprite_claw.setVisible false
-    @sprite_arm.setAnimation "arm"
+    @sprite_arm.setAnimationName "arm"
     @claw_attached = false
     @space.removeBody(@claw.body)
     @space.removeShape(@claw)
@@ -1086,7 +1086,7 @@ class Game
 
 
   update: (dt) =>
-    mouse_pos = @engine.mousePos()
+    mouse_pos = @engine.mouse_pos.clone()
     mouse_pos.y = 600 - mouse_pos.y
     for tank in @tanks
       tank.mouse_pos = mouse_pos.minus(tank.pos)
@@ -1126,7 +1126,8 @@ class Game
 
 
   draw: (context) =>
-    @engine.clear()
+    context.fillStyle = '#000000'
+    context.fillRect(0, 0, @engine.size.x, @engine.size.y)
 
     for tank in @tanks
       tank.moveSprites()
@@ -1170,17 +1171,16 @@ class ControlsScene
     @batch = new Batch()
     @img = new Sprite("howtoplay", batch: @batch)
     @engine.on('draw', @draw)
-    @engine.on('mousedown', @onMouseDown)
+    @engine.on('buttondown', @onButtonDown)
 
-  draw: =>
-    @engine.clear()
+  draw: (context) =>
     @engine.draw @batch
 
   end: =>
     @engine.removeListener('draw', @draw)
-    @engine.removeListener('mousedown', @onMouseDown)
+    @engine.removeListener('buttondown', @onButtonDown)
 
-  onMouseDown: =>
+  onButtonDown: =>
     @gw.title()
 
 
@@ -1189,24 +1189,23 @@ class Credits
     @batch = new Batch()
     @img = new Sprite("credits", batch: @batch)
     @engine.on('draw', @draw)
-    @engine.on('mousedown', @onMouseDown)
+    @engine.on('buttondown', @onButtonDown)
 
   draw: =>
-    @engine.clear()
     @engine.draw @batch
 
   end: =>
     @engine.removeListener('draw', @draw)
-    @engine.removeListener('mousedown', @onMouseDown)
+    @engine.removeListener('buttondown', @onButtonDown)
     @engine.removeListener('update', @update)
 
-  onMouseDown: (pos) =>
+  onButtonDown: (pos) =>
     @gw.title()
 
 
 class Title
   constructor: (@gw, @engine, @server) ->
-    @engine.on 'mousedown', @onMouseDown
+    @engine.on 'buttondown', @onButtonDown
     @engine.on 'draw', @draw
     @engine.on 'update', @update
 
@@ -1271,7 +1270,6 @@ class Title
           return
 
   draw: =>
-    @engine.clear()
     @engine.draw @batch
     if @server?
       for label in @labels
@@ -1280,10 +1278,11 @@ class Title
 
   end: =>
     @engine.removeListener 'draw', @onDraw
-    @engine.removeListener 'mousedown', @onMouseDown
+    @engine.removeListener 'buttondown', @onButtonDown
     @engine.removeListener 'update', @update
 
-  onMouseDown: (click_pos) =>
+  onButtonDown: =>
+    click_pos = @engine.mouse_pos
     if click_pos.distanceTo(@start_pos) < @click_radius
       @gw.play(false)
       return
