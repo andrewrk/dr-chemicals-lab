@@ -1174,14 +1174,14 @@ class ControlsScene
     @batch = new Batch()
     @img = new Sprite("howtoplay", batch: @batch)
     @engine.on('draw', @draw)
-    @engine.on('buttondown', @onButtonDown)
+    @engine.on('buttonup', @onButtonDown)
 
   draw: (context) =>
     @engine.draw @batch
 
   end: =>
     @engine.removeListener('draw', @draw)
-    @engine.removeListener('buttondown', @onButtonDown)
+    @engine.removeListener('buttonup', @onButtonDown)
 
   onButtonDown: =>
     @gw.title()
@@ -1192,14 +1192,14 @@ class Credits
     @batch = new Batch()
     @img = new Sprite("credits", batch: @batch)
     @engine.on('draw', @draw)
-    @engine.on('buttondown', @onButtonDown)
+    @engine.on('buttonup', @onButtonDown)
 
   draw: =>
     @engine.draw @batch
 
   end: =>
     @engine.removeListener('draw', @draw)
-    @engine.removeListener('buttondown', @onButtonDown)
+    @engine.removeListener('buttonup', @onButtonDown)
     @engine.removeListener('update', @update)
 
   onButtonDown: (pos) =>
@@ -1281,7 +1281,7 @@ class Title
 
   end: =>
     @engine.removeListener 'draw', @onDraw
-    @engine.removeListener 'buttondown', @onButtonDown
+    @engine.removeListener 'buttonup', @onButtonDown
     @engine.removeListener 'update', @update
 
   onButtonDown: =>
