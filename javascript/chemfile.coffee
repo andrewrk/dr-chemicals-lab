@@ -15,13 +15,13 @@ exports.spritesheet =
     anchor: v(0, 0)
   animations:
     arm:
-      anchor: v(5, 23-11)
+      anchor: v(5, 12)
       frames: "arm.png"
     arm_flung:
-      anchor: v(5, 23-11)
+      anchor: v(5, 12)
       frames: "arm-flung.png"
     claw:
-      anchor: v(16, 34-16)
+      anchor: v(16, 18)
     still:
       anchor: v(16, 69-32)
       frames: "man.png"

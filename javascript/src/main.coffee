@@ -881,17 +881,17 @@ class Tank
       closest_dist = null
       @atoms.each (atom) =>
         if atom.marked_for_deletion
-          return
+          return true
         # http://stackoverflow.com/questions/1073336/circle-line-collision-detection
         f = atom.shape.body.p.minus(@point_start)
         if sign(f.x) isnt sign(@point_vector.x) or sign(f.y) isnt sign(@point_vector.y)
-          return
+          return true
         a = @point_vector.dot(@point_vector)
         b = 2 * f.dot(@point_vector)
         c = f.dot(f) - atom_radius*atom_radius
         discriminant = b*b - 4*a*c
         if discriminant < 0
-          return
+          return true
 
         dist = atom.shape.body.p.distanceSqrd(@point_start)
         if not @closest_atom? or dist < closest_dist
@@ -980,7 +980,7 @@ class Tank
       # draw lines for bonded atoms
       @atoms.each (atom) =>
         if atom.marked_for_deletion
-          return
+          return true
         atom.bonds.each (other, joint) =>
           @drawLine(context, @pos.plus(atom.shape.body.p), @pos.plus(other.shape.body.p), [0, 0, 1, 1])
           true

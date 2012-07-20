@@ -5,6 +5,18 @@ developing:
 
 things left to fix:
 
+    arm pointing  wrong
+    not pointing in correct direction
+    bomb explosino in wrong place
+    man jumping animation looping
+    movement physics wonky
+    loop bond too short
+    claw hitting too fast
+    use integer coords
+    bomb explosions in the wrong spot
+    lazer not red
+    point line not grey
+
     flip y axis
     turn on alpha blending (search for TODO)
     pymunk/chipmunkjs
