@@ -389,6 +389,7 @@ class Tank
         # explosion animation
         sprite = new Sprite("bombsplode", batch:@game.batch, z_order:@game.group_fg)
         sprite.pos = @pos.plus(bomb.shape.body.p)
+        sprite.pos.y = 600 - sprite.pos.y
         removeBombSprite = null
         sprite.on "animation_end", do (sprite) => => sprite.delete()
         @removeBomb(bomb)
@@ -977,7 +978,9 @@ class Tank
 
       # draw a line from gun to claw if it's out
       if @sprite_claw.visible
-        @drawLine(context, @point_start.plus(@pos), @sprite_claw.pos, [255, 255, 0, 1])
+        invert_y = @sprite_claw.pos.clone()
+        invert_y.y = 600 - invert_y.y
+        @drawLine(context, @point_start.plus(@pos), invert_y, [255, 255, 0, 1])
 
       # draw lines for bonded atoms
       @atoms.each (atom) =>

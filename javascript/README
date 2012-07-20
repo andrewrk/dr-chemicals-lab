@@ -5,12 +5,9 @@ developing:
 
 things left to fix:
 
-    claw rope is drawn at wrong place
     claw can't attach to atoms
     man jumping animation looping
-    bomb explosino in wrong place
     use integer coords
-    bomb explosions in the wrong spot
     animations starting at the wrong frame
 
     flip y axis
@@ -21,3 +18,4 @@ things left to fix:
 
     sfx
     serialization
+    multiplayer
