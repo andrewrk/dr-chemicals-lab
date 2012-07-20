@@ -1,5 +1,4 @@
-{Vec2d} = require("chem")
-v = (x, y) -> new Vec2d(x, y)
+v = (x, y) -> {x, y}
 
 exports.libs = [
   'public/vendor'
@@ -9,10 +8,10 @@ exports.main = 'src/main'
 
 exports.spritesheet =
   defaults:
-    delay: 1
+    delay: 0.1
     loop: true
     offset: v(0, 0)
-    # possible values: a Vec2d instance, or "center"
+    # possible values: an object with x and y properties, or "center"
     anchor: v(0, 0)
   animations:
     arm:

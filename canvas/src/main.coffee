@@ -1,7 +1,7 @@
 #depend "chem"
 #depend "cp" bare
 
-{Vec2d, Engine, Sprite, Batch} = Chem
+{Vec2d, Engine, Sprite, Batch, Button} = Chem
 
 atom_size = new Vec2d(32, 32)
 atom_radius = atom_size.x / 2
@@ -84,7 +84,7 @@ class Map
     Map.assertItemHasId key
     unless @pairs[key.id]?
       @length += 1
-    @pairs[item.id] = [key, value]
+    @pairs[key.id] = [key, value]
     return
 
   remove: (key) ->
@@ -96,7 +96,7 @@ class Map
 
   each: (cb) ->
     for id, pair of @pairs
-      if not cb.call(pair)
+      if not cb.apply(null, pair)
         return
     return
 
@@ -150,7 +150,7 @@ class Atom extends Indexable
     if @flavor_index isnt other.flavor_index
       return false
 
-    joint = new cp.PinJoint(@shape.body, other.shape.body)
+    joint = new cp.PinJoint(@shape.body, other.shape.body, Vec2d(), Vec2d())
     joint.distance = atom_radius * 2.5
     joint.max_bias = max_bias
     @bonds.set other, joint
@@ -335,28 +335,28 @@ class Tank
 
   initControls: =>
     @controls = {}
-    @controls[Chem.Button.Key_A] = Control.MoveLeft
-    @controls[Chem.Button.Key_D] = Control.MoveRight
-    @controls[Chem.Button.Key_W] = Control.MoveUp
-    @controls[Chem.Button.Key_S] = Control.MoveDown
+    @controls[Button.Key_A] = Control.MoveLeft
+    @controls[Button.Key_D] = Control.MoveRight
+    @controls[Button.Key_W] = Control.MoveUp
+    @controls[Button.Key_S] = Control.MoveDown
 
-    @controls[Chem.Button.Key_1] = Control.SwitchToGrapple
-    @controls[Chem.Button.Key_2] = Control.SwitchToRay
-    @controls[Chem.Button.Key_3] = Control.SwitchToLazer
+    @controls[Button.Key_1] = Control.SwitchToGrapple
+    @controls[Button.Key_2] = Control.SwitchToRay
+    @controls[Button.Key_3] = Control.SwitchToLazer
 
-    @controls[Chem.Button.Mouse_Left] = Control.FireMain
-    @controls[Chem.Button.Mouse_Right] = Control.FireAlt
+    @controls[Button.Mouse_Left] = Control.FireMain
+    @controls[Button.Mouse_Right] = Control.FireAlt
 
     if params.keyboard is 'dvorak'
-      @controls[Chem.Button.Key_A] = Control.MoveLeft
-      @controls[Chem.Button.Key_E] = Control.MoveRight
-      @controls[Chem.Button.Key_Comma] = Control.MoveUp
-      @controls[Chem.Button.Key_S] = Control.MoveDown
+      @controls[Button.Key_A] = Control.MoveLeft
+      @controls[Button.Key_E] = Control.MoveRight
+      @controls[Button.Key_Comma] = Control.MoveUp
+      @controls[Button.Key_S] = Control.MoveDown
     else if params.keyboard is 'colemak'
-      @controls[Chem.Button.Key_A] = Control.MoveLeft
-      @controls[Chem.Button.Key_S] = Control.MoveRight
-      @controls[Chem.Button.Key_W] = Control.MoveUp
-      @controls[Chem.Button.Key_R] = Control.MoveDown
+      @controls[Button.Key_A] = Control.MoveLeft
+      @controls[Button.Key_S] = Control.MoveRight
+      @controls[Button.Key_W] = Control.MoveUp
+      @controls[Button.Key_R] = Control.MoveDown
 
     @let_go_of_fire_main = true
     @let_go_of_fire_alt = true
@@ -813,7 +813,7 @@ class Tank
           if @enable_point_calculation
             @points += len_bond_loop
           @explode_atoms(bond_loop)
-          @queued_asplosions.append([atom1.flavor_index, len_bond_loop])
+          @queued_asplosions.push([atom1.flavor_index, len_bond_loop])
 
           @playSfx("merge")
         else
@@ -847,7 +847,7 @@ class Tank
     atom2 = arbiter.b.atom
     # bond the atoms together
     if atom1.flavor_index is atom2.flavor_index
-      @bond_queue.append([atom1, atom2])
+      @bond_queue.push([atom1, atom2])
 
   playSfx: (name) =>
     if @sfx_enabled and @game.sfx?
@@ -1257,7 +1257,7 @@ class Title
       @nick_label[nick] = label
       @nick_user[nick] = user
       next_pos.y -= h
-      @labels.append(label)
+      @labels.push(label)
 
   update: (dt) =>
     if @server?
@@ -1291,6 +1291,9 @@ class Title
       return
     else if click_pos.distanceTo(@controls_pos) < @click_radius
       @gw.controls()
+      return
+    else if @engine.buttonState(Button.Key_Space)
+      @gw.play(false)
       return
 
     if @server?
@@ -1330,3 +1333,4 @@ Chem.onReady ->
   w = new GameWindow(engine, null)
   w.title()
   engine.start()
+  canvas.focus()
