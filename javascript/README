@@ -5,13 +5,14 @@ developing:
 
 things left to fix:
 
-    bomb explosino in wrong place
+    claw rope is drawn at wrong place
+    claw can't attach to atoms
     man jumping animation looping
-    movement physics wonky
     loop bond too short
-    claw hitting too fast
+    bomb explosino in wrong place
     use integer coords
     bomb explosions in the wrong spot
+    animations starting at the wrong frame
 
     flip y axis
     turn on alpha blending (search for TODO)

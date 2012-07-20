@@ -496,7 +496,7 @@ class Tank
     # physics for man
     shape = new cp.BoxShape(new cp.Body(20, 10000000), @man_size.x, @man_size.y)
     shape.body.setPos pos
-    shape.body.velocity = vel
+    shape.body.setVelocity(vel)
     shape.body.w_limit = 0
     @man_angle = shape.body.a
     shape.setElasticity 0
@@ -617,7 +617,7 @@ class Tank
     grounded = ground_shapes.length > 0
 
     grounded_move_force = 1000
-    not_moving_x = Math.abs(@man.body.velocity.x) < 5.0
+    not_moving_x = Math.abs(@man.body.vx) < 5.0
     air_move_force = 200
     grounded_move_boost = 30
     air_move_boost = 0
@@ -627,15 +627,15 @@ class Tank
     move_left = @control_state[Control.MoveLeft] and not @control_state[Control.MoveRight]
     move_right = @control_state[Control.MoveRight] and not @control_state[Control.MoveLeft]
     if move_left
-      if @man.body.velocity.x >= -max_speed and @man.body.p.x - @man_size.x / 2 - 5 > 0
+      if @man.body.vx >= -max_speed and @man.body.p.x - @man_size.x / 2 - 5 > 0
         @man.body.applyImpulse(new Vec2d(-move_force, 0), new Vec2d(0, 0))
-        if @man.body.velocity.x > -move_boost and @man.body.velocity.x < 0
-          @man.body.velocity.x = -move_boost
+        if @man.body.vx > -move_boost and @man.body.vx < 0
+          @man.body.vx = -move_boost
     else if move_right
-      if @man.body.velocity.x <= max_speed and @man.body.p.x + @man_size.x / 2 + 3 < @size.x
+      if @man.body.vx <= max_speed and @man.body.p.x + @man_size.x / 2 + 3 < @size.x
         @man.body.applyImpulse(new Vec2d(move_force, 0), new Vec2d(0, 0))
-        if @man.body.velocity.x < move_boost and @man.body.velocity.x > 0
-          @man.body.velocity.x = move_boost
+        if @man.body.vx < move_boost and @man.body.vx > 0
+          @man.body.vx = move_boost
 
     flip = if @mouse_pos.x < @man.body.p.x then -1 else 1
     @sprite_arm.scale.x = @sprite_man.scale.x = flip
@@ -653,7 +653,7 @@ class Tank
       animation_name = "jump"
       @sprite_man.setAnimationName(animation_name)
       @sprite_man.setFrameIndex(0)
-      @man.body.velocity.y = 100
+      @man.body.vy = 100
       @man.body.applyImpulse(new Vec2d(0, 2000), new Vec2d(0, 0))
       # apply a reverse force upon the atom we jumped from
       power = 1000 / ground_shapes.length
@@ -696,7 +696,7 @@ class Tank
         body = new cp.Body(5, 1000000)
         body.setPos new Vec2d(@point_start)
         body.setAngle @point_vector.angle()
-        body.velocity = @man.body.velocity + @point_vector * @claw_shoot_speed
+        body.setVelocity Vec2d(@man.body.vx, @man.body.vy).plus(@point_vector.scaled(@claw_shoot_speed))
         @claw = new cp.CircleShape(body, @claw_radius, new Vec2d())
         @claw.setFriction 1
         @claw.setElasticity 0
@@ -776,10 +776,10 @@ class Tank
         @ray_atom.rogue = false
         if @control_state[Control.FireMain]
           # shoot it!!
-          @ray_atom.shape.body.velocity = @man.body.velocity + @point_vector * @ray_shoot_speed
+          @ray_atom.shape.body.setVelocity Vec2d(@man.body.vx, @man.body.vy).plus(@point_vector.scaled(@ray_shoot_speed))
           @playSfx('lazer')
         else
-          @ray_atom.shape.body.velocity = new Vec2d(@man.body.velocity)
+          @ray_atom.shape.body.setVelocity(Vec2d(@man.body.vx, @man.body.vy))
         @ray_atom = null
         @let_go_of_fire_main = false
 
