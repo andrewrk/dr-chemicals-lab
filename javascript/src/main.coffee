@@ -971,33 +971,34 @@ class Tank
   drawPrimitives: (context) =>
     # draw a line from gun hand to @point_end
     if not @game_over
+      context.fillStyle = '#000000'
       @drawLine(context, @point_start.plus(@pos), @point_end.plus(@pos), [0, 0, 0, 0.23])
 
       # draw a line from gun to claw if it's out
       if @sprite_claw.visible
-        @drawLine(context, @point_start.plus(@pos), @sprite_claw.pos, [1, 1, 0, 1])
+        @drawLine(context, @point_start.plus(@pos), @sprite_claw.pos, [255, 255, 0, 1])
 
       # draw lines for bonded atoms
       @atoms.each (atom) =>
         if atom.marked_for_deletion
           return true
         atom.bonds.each (other, joint) =>
-          @drawLine(context, @pos.plus(atom.shape.body.p), @pos.plus(other.shape.body.p), [0, 0, 1, 1])
+          @drawLine(context, @pos.plus(atom.shape.body.p), @pos.plus(other.shape.body.p), [0, 0, 255, 1])
           true
         true
 
       if @game.debug
         if @claw_pins
           for claw_pin in @claw_pins
-            @drawLine(context, @pos.plus(claw_pin.a.p).plus(claw_pin.anchr1), @pos.plus(claw_pin.b.p).plus(claw_pin.anchr2), [1, 0, 1, 1])
+            @drawLine(context, @pos.plus(claw_pin.a.p).plus(claw_pin.anchr1), @pos.plus(claw_pin.b.p).plus(claw_pin.anchr2), [255, 0, 255, 1])
 
       # lazer
       if @lazer_line?
         [start, end] = @lazer_line
-        @drawLine(context, start.plus(@pos), end.plus(@pos), [1, 0, 0, 1])
+        @drawLine(context, start.plus(@pos), end.plus(@pos), [255, 0, 0, 1])
 
   drawLine: (context, p1, p2, color) =>
-    context.strokeStyle = "rgb(#{color[0]}, #{color[1]}, #{color[2]}, #{color[3]})"
+    context.strokeStyle = "rgba(#{color[0]}, #{color[1]}, #{color[2]}, #{color[3]})"
     context.beginPath()
     context.moveTo(p1.x, 600 - p1.y)
     context.lineTo(p2.x, 600 - p2.y)

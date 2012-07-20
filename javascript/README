@@ -14,8 +14,6 @@ things left to fix:
     claw hitting too fast
     use integer coords
     bomb explosions in the wrong spot
-    lazer not red
-    point line not grey
 
     flip y axis
     turn on alpha blending (search for TODO)
