@@ -151,7 +151,7 @@ class Atom extends Indexable
       return false
 
     joint = new cp.PinJoint(@shape.body, other.shape.body, Vec2d(), Vec2d())
-    joint.distance = atom_radius * 2.5
+    joint.dist = atom_radius * 2.5
     joint.max_bias = max_bias
     @bonds.set other, joint
     other.bonds.set this, joint
