@@ -29,7 +29,7 @@ exports.spritesheet =
       anchor: v(23, 64-32)
       loop: false
     walk:
-      anchor: v(23, 67)
+      anchor: v(23, 64-32)
       delay: 0.05
     asplosion:
       loop: false
