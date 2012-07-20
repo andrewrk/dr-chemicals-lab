@@ -35,7 +35,7 @@ exports.spritesheet =
       loop: false
       anchor: v(16, 32-16)
     atomfail:
-      delay: 0.2
+      delay: 0.05
       loop: false
       anchor: v(16, 32-16)
     tank0:

@@ -555,6 +555,7 @@ class Tank
     @explodeAtoms(@atoms.clone(), "atomfail")
 
     @sprite_man.setAnimationName "defeat"
+    @sprite_man.setFrameIndex(0)
     @sprite_arm.setVisible false
 
     @retractClaw()
@@ -572,6 +573,7 @@ class Tank
     @explodeAtoms(@atoms.clone())
 
     @sprite_man.setAnimationName "victory"
+    @sprite_man.setFrameIndex(0)
     @sprite_arm.setVisible false
 
     @retractClaw()
@@ -590,6 +592,7 @@ class Tank
     clearSprite = =>
       @removeAtom(atom)
     atom.sprite.setAnimationName animation_name
+    atom.sprite.setFrameIndex(0)
     atom.sprite.on("animation_end", clearSprite)
 
 
@@ -634,7 +637,9 @@ class Tank
         if @man.body.velocity.x < move_boost and @man.body.velocity.x > 0
           @man.body.velocity.x = move_boost
 
-    negate = @mouse_pos.x < @man.body.p.x
+    flip = if @mouse_pos.x < @man.body.p.x then -1 else 1
+    @sprite_arm.scale.x = @sprite_man.scale.x = flip
+
     # jumping
     if grounded
       if move_left or move_right
@@ -647,7 +652,7 @@ class Tank
     if @control_state[Control.MoveUp] and grounded
       animation_name = "jump"
       @sprite_man.setAnimationName(animation_name)
-      if negate then @sprite_man.scale.x = -1
+      @sprite_man.setFrameIndex(0)
       @man.body.velocity.y = 100
       @man.body.applyImpulse(new Vec2d(0, 2000), new Vec2d(0, 0))
       # apply a reverse force upon the atom we jumped from
@@ -657,9 +662,7 @@ class Tank
       @playSfx('jump')
 
     # point the man+arm in direction of mouse
-    if @sprite_man.animation isnt animation_name
-      @sprite_man.setAnimationName animation_name
-    if negate then @sprite_man.scale.x = -1
+    @sprite_man.setAnimationName animation_name
 
     # selecting a different gun
     if @control_state[Control.SwitchToGrapple] and @equipped_gun isnt Control.SwitchToGrapple
@@ -681,9 +684,7 @@ class Tank
     else
       arm_animation = @gun_animations[@equipped_gun]
 
-    if @sprite_arm.animation isnt arm_animation
-      @sprite_arm.setAnimationName arm_animation
-    if negate then @sprite_arm.scale.x = -1
+    @sprite_arm.setAnimationName arm_animation
 
     if @equipped_gun is Control.SwitchToGrapple
       claw_reel_in_speed = 400
@@ -958,7 +959,7 @@ class Tank
     @sprite_arm.pos.y = 600 - @sprite_arm.pos.y
     @sprite_arm.rotation = -@mouse_pos.minus(@man.body.p).angle()
     if @mouse_pos.x < @man.body.p.x
-      @sprite_arm.rotation += Math.PI
+      @sprite_arm.rotation = Math.PI - @sprite_arm.rotation
 
     @sprite_tank.pos = @pos.plus(@ceiling.body.p)
     @sprite_tank.pos.y = 600 - @sprite_tank.pos.y
