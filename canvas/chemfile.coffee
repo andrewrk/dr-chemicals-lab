@@ -27,13 +27,11 @@ exports.spritesheet =
       frames: "man.png"
     jump:
       anchor: v(23, 64-32)
-      delay: 0.1
       loop: false
     walk:
       anchor: v(23, 67)
       delay: 0.05
     asplosion:
-      delay: 0.1
       loop: false
       anchor: v(16, 32-16)
     atomfail:
@@ -41,11 +39,9 @@ exports.spritesheet =
       loop: false
       anchor: v(16, 32-16)
     tank0:
-      delay: 0.1
       anchor: v(192, 256)
       frames: "tankleft"
     tank1:
-      delay: 0.1
       anchor: v(192, 256)
       frames: "tankright"
     lazergun:
@@ -73,17 +69,13 @@ exports.spritesheet =
     rock:
       anchor: v(17, 17)
     bomb:
-      delay: 0.1
       anchor: v(17, 17)
     bombsplode:
-      delay: 0.1
       loop: false
       frames: "bigbadaboom"
     defeat:
-      delay: 0.1
       anchor: v(23, 32)
     victory:
-      delay: 0.1
       anchor: v(23, 32)
     bg:
       frames: "bg.png"

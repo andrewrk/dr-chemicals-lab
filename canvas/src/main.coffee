@@ -552,12 +552,12 @@ class Tank
       return
     @game_over = true
     @winner = false
-    @explode_atoms(@atoms.clone(), "atomfail")
+    @explodeAtoms(@atoms.clone(), "atomfail")
 
     @sprite_man.setAnimationName "defeat"
     @sprite_arm.setVisible false
 
-    @retract_claw()
+    @retractClaw()
 
     if @other_tank?
       @other_tank.win()
@@ -569,12 +569,12 @@ class Tank
 
     @game_over = true
     @winner = true
-    @explode_atoms(@atoms.clone())
+    @explodeAtoms(@atoms.clone())
 
     @sprite_man.setAnimationName "victory"
     @sprite_arm.setVisible false
 
-    @retract_claw()
+    @retractClaw()
 
     if @other_tank?
       @other_tank.lose()
@@ -590,7 +590,7 @@ class Tank
     clearSprite = =>
       @removeAtom(atom)
     atom.sprite.setAnimationName animation_name
-    atom.sprite.set_handler("on_animation_end", clear_sprite)
+    atom.sprite.on("animation_end", clearSprite)
 
 
   explodeAtoms: (atoms, animation_name="asplosion") =>
@@ -717,7 +717,7 @@ class Tank
             @want_to_retract_claw = true
             @let_go_of_fire_main = false
           else if @claw_attached and @let_go_of_fire_main
-            @retract_claw()
+            @retractClaw()
             @let_go_of_fire_main = false
         else if claw_dist > @min_claw_dist
           # prevent the claw from going back out once it goes in
@@ -787,7 +787,7 @@ class Tank
 
       if @want_to_retract_claw
         @want_to_retract_claw = false
-        @retract_claw()
+        @retractClaw()
     if not @control_state[Control.FireAlt] and not @let_go_of_fire_alt
       @let_go_of_fire_alt = true
 
@@ -812,7 +812,7 @@ class Tank
           # make all the atoms in this loop disappear
           if @enable_point_calculation
             @points += len_bond_loop
-          @explode_atoms(bond_loop)
+          @explodeAtoms(bond_loop)
           @queued_asplosions.push([atom1.flavor_index, len_bond_loop])
 
           @playSfx("merge")
@@ -853,7 +853,7 @@ class Tank
     if @sfx_enabled and @game.sfx?
       @game.sfx[name].play()
 
-  retract_claw: =>
+  retractClaw: =>
     if not @sprite_claw.visible
       return
     @claw_in_motion = false
