@@ -1138,7 +1138,7 @@ class Game
       tank.drawPrimitives(context)
     
     if @fps_display
-      engine.drawFps()
+      @engine.drawFps()
 
 class GameWindow
   constructor: (@engine, @server) ->
