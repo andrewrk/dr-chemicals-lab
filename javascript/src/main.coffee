@@ -255,9 +255,9 @@ class Tank
 
     @min_power = params.power or 3
 
-    @sprite_arm = new Sprite('arm', batch: @game.batch, zorder: @game.group_fg)
-    @sprite_man = new Sprite('still', batch: @game.batch, zorder: @game.group_main)
-    @sprite_claw = new Sprite('claw', batch: @game.batch, zorder: @game.group_main)
+    @sprite_arm = new Sprite('arm', batch: @game.batch, z_order: @game.group_fg)
+    @sprite_man = new Sprite('still', batch: @game.batch, z_order: @game.group_main)
+    @sprite_claw = new Sprite('claw', batch: @game.batch, z_order: @game.group_main)
 
     @space = new cp.Space()
     @space.gravity = new Vec2d(0, -400)
@@ -303,7 +303,7 @@ class Tank
     @lose_ratio = 95 / 300
 
     @tank_index ?= randInt(0, 1)
-    @sprite_tank = new Sprite("tank#{@tank_index}", batch:@game.batch, zorder:@game.group_main)
+    @sprite_tank = new Sprite("tank#{@tank_index}", batch:@game.batch, z_order:@game.group_main)
 
     @game_over = false
     @winner = null
@@ -387,7 +387,7 @@ class Tank
           body.applyImpulse(direction.scaled(power * damp), new Vec2d(0,0))
 
         # explosion animation
-        sprite = new Sprite("bombsplode", batch:@game.batch, zorder:@game.group_fg)
+        sprite = new Sprite("bombsplode", batch:@game.batch, z_order:@game.group_fg)
         sprite.pos = @pos.plus(bomb.shape.body.p)
         removeBombSprite = null
         sprite.on "animation_end", do (sprite) => => sprite.delete()
@@ -522,7 +522,7 @@ class Tank
   dropBomb: =>
     # drop a bomb
     pos = @getDropPos(Bomb.size)
-    sprite = new Sprite('bomb', batch: @game.batch, zorder: @game.group_main)
+    sprite = new Sprite('bomb', batch: @game.batch, z_order: @game.group_main)
     timeout = randInt(1, 5)
     bomb = new Bomb(pos, sprite, @space, timeout)
     @bombs.add(bomb)
@@ -530,7 +530,7 @@ class Tank
   dropRock: =>
     # drop a rock
     pos = @getDropPos(Rock.size)
-    sprite = new Sprite('rock', batch: @game.batch, zorder: @game.group_main)
+    sprite = new Sprite('rock', batch: @game.batch, z_order: @game.group_main)
     rock = new Rock(pos, sprite, @space)
     @rocks.add(rock)
 
@@ -543,7 +543,7 @@ class Tank
       # drop a random atom
       flavor_index = randInt(0, Atom.flavor_count-1)
       pos = @getDropPos(atom_size)
-      atom = new Atom(pos, flavor_index, new Sprite(@game.atom_imgs[flavor_index], batch: @game.batch, zorder: @game.group_main), @space)
+      atom = new Atom(pos, flavor_index, new Sprite(@game.atom_imgs[flavor_index], batch: @game.batch, z_order: @game.group_main), @space)
       @atoms.add(atom)
 
 
@@ -1013,8 +1013,8 @@ class Game
     @group_main = 1
     @group_fg = 2
 
-    @sprite_bg = new Sprite("bg", batch: @batch, zorder: @group_bg)
-    @sprite_bg_top = new Sprite("bg_top", batch: @batch, zorder: @group_fg)
+    @sprite_bg = new Sprite("bg", batch: @batch, z_order: @group_bg)
+    @sprite_bg_top = new Sprite("bg_top", batch: @batch, z_order: @group_fg)
 
     @atom_imgs = ("atom#{i}" for i in [0...Atom.flavor_count])
 
@@ -1056,7 +1056,7 @@ class Game
 
       tank_index = 1 - @control_tank.tank_index
       tank_name = "tank#{tank_index}"
-      @sprite_other_tank = new Sprite(tank_name, batch: @batch, zorder: @group_main, pos: new Vec2d(tank_pos[1].x + @control_tank.size.x / 2, tank_pos[1].y + @control_tank.size.y / 2))
+      @sprite_other_tank = new Sprite(tank_name, batch: @batch, z_order: @group_main, pos: new Vec2d(tank_pos[1].x + @control_tank.size.x / 2, tank_pos[1].y + @control_tank.size.y / 2))
       @sprite_other_tank.pos.y = 600 - @sprite_other_tank.pos.y
     else
       @tanks = (new Tank(pos, tank_dims, this, i) for pos, i in tank_pos)
