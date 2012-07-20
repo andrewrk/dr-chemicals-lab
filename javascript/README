@@ -6,16 +6,9 @@ developing:
 things left to fix:
 
     claw can't attach to atoms
-    man jumping animation looping
-    use integer coords
     animations starting at the wrong frame
-
-    flip y axis
-    turn on alpha blending (search for TODO)
-    pymunk/chipmunkjs
-        Atom_for_shape
-    vector math
 
     sfx
     serialization
     multiplayer
+    low framerate

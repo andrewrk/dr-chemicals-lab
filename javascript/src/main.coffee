@@ -152,7 +152,7 @@ class Atom extends Indexable
 
     joint = new cp.PinJoint(@shape.body, other.shape.body, Vec2d(), Vec2d())
     joint.dist = atom_radius * 2.5
-    joint.max_bias = max_bias
+    joint.maxBias = max_bias
     @bonds.set other, joint
     other.bonds.set this, joint
     @space.addConstraint(joint)
@@ -703,7 +703,7 @@ class Tank
         @claw.setElasticity 0
         @claw.collision_type = Collision.Claw
         @claw_joint = new cp.SlideJoint(@claw.body, @man.body, new Vec2d(0, 0), new Vec2d(0, 0), 0, @size.length())
-        @claw_joint.max_bias = max_bias
+        @claw_joint.maxBias = max_bias
         @space.addBody(body)
         @space.addShape(@claw)
         @space.addConstraint(@claw_joint)
@@ -839,7 +839,7 @@ class Tank
       new cp.PinJoint(claw.body, shape.body, new Vec2d(0, 0), new Vec2d(0, 0)),
     ]
     for claw_pin in @claw_pins_to_add
-      claw_pin.max_bias = max_bias
+      claw_pin.maxBias = max_bias
     @claw_attached = true
 
     @playSfx("claw_hit")
@@ -1082,8 +1082,6 @@ class Game
     @engine.on 'update', @update
 
 
-    # TODO: turn on alpha blending
-
 
     @state_render_timeout = 0.3
     @next_state_render = @state_render_timeout
@@ -1210,7 +1208,7 @@ class Credits
 
 class Title
   constructor: (@gw, @engine, @server) ->
-    @engine.on 'buttondown', @onButtonDown
+    @engine.on 'buttonup', @onButtonDown
     @engine.on 'draw', @draw
     @engine.on 'update', @update
 
