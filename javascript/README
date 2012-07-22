@@ -5,11 +5,9 @@ developing:
 
 things left to fix:
 
-    claw can't attach to atoms
-    animations starting at the wrong frame
-
-    sfx
     serialization
     multiplayer
     low framerate
-    firefox
+    claw can't attach to atoms
+    animations starting at the wrong frame
+

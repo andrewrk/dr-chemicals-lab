@@ -1023,21 +1023,21 @@ class Game
 
     @atom_imgs = ("atom#{i}" for i in [0...Atom.flavor_count])
 
-    if false # not params.nofx?
+    if not params.nofx?
       @sfx = {
-        'jump': pyglet.resource.media('data/sfx/jump__dave-des__fast-simple-chop-5.ogg', streaming=false),
-        'atom_hit_atom': pyglet.resource.media('data/sfx/atomscolide__batchku__colide-18-005.ogg', streaming=false),
-        'ray': pyglet.resource.media('data/sfx/raygun__owyheesound__decelerate-discharge.ogg', streaming=false),
-        'lazer': pyglet.resource.media('data/sfx/lazer__supraliminal__laser-short.ogg', streaming=false),
-        'merge': pyglet.resource.media('data/sfx/atomsmerge__tigersound__disappear.ogg', streaming=false),
-        'bond': pyglet.resource.media('data/sfx/bond.ogg', streaming=false),
-        'victory': pyglet.resource.media('data/sfx/victory__iut-paris8__labbefabrice-2011-01.ogg', streaming=false),
-        'defeat': pyglet.resource.media('data/sfx/defeat__freqman__lostspace.ogg', streaming=false),
-        'switch_weapon': pyglet.resource.media('data/sfx/switchweapons__erdie__metallic-weapon-low.ogg', streaming=false),
-        'explode': pyglet.resource.media('data/sfx/atomsexplode3-1.ogg', streaming=false),
-        'claw_hit': pyglet.resource.media('data/sfx/shootingtheclaw__smcameron__rocks2.ogg', streaming=false),
-        'shoot_claw': pyglet.resource.media('data/sfx/landonsurface__juskiddink__thud-dry.ogg', streaming=false),
-        'retract': pyglet.resource.media('data/sfx/clawcomesback__simon-rue__studs-moln-v4.ogg', streaming=false),
+        'jump': new Audio('sfx/jump__dave-des__fast-simple-chop-5.ogg'),
+        'atom_hit_atom': new Audio('sfx/atomscolide__batchku__colide-18-005.ogg'),
+        'ray': new Audio('sfx/raygun__owyheesound__decelerate-discharge.ogg'),
+        'lazer': new Audio('sfx/lazer__supraliminal__laser-short.ogg'),
+        'merge': new Audio('sfx/atomsmerge__tigersound__disappear.ogg'),
+        'bond': new Audio('sfx/bond.ogg'),
+        'victory': new Audio('sfx/victory__iut-paris8__labbefabrice-2011-01.ogg'),
+        'defeat': new Audio('sfx/defeat__freqman__lostspace.ogg'),
+        'switch_weapon': new Audio('sfx/switchweapons__erdie__metallic-weapon-low.ogg'),
+        'explode': new Audio('sfx/atomsexplode3-1.ogg'),
+        'claw_hit': new Audio('sfx/shootingtheclaw__smcameron__rocks2.ogg'),
+        'shoot_claw': new Audio('sfx/landonsurface__juskiddink__thud-dry.ogg'),
+        'retract': new Audio('sfx/clawcomesback__simon-rue__studs-moln-v4.ogg'),
       }
     else
       @sfx = null
@@ -1284,7 +1284,7 @@ class Title
     @engine.removeListener 'buttonup', @onButtonDown
     @engine.removeListener 'update', @update
 
-  onButtonDown: =>
+  onButtonDown: (button) =>
     click_pos = @engine.mouse_pos
     if click_pos.distanceTo(@start_pos) < @click_radius
       @gw.play(false)
@@ -1295,7 +1295,7 @@ class Title
     else if click_pos.distanceTo(@controls_pos) < @click_radius
       @gw.controls()
       return
-    else if @engine.buttonState(Button.Key_Space)
+    else if button is Button.Key_Space
       @gw.play(false)
       return
 
