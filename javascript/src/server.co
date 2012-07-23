@@ -1,0 +1,77 @@
+export run = !->
+  const
+    http = require('http')
+    socketio = require('socket.io')
+    StaticServer = require('node-static').Server
+    fs = require('fs')
+
+  static_server = new StaticServer("./public")
+  app = http.createServer !(req, res) ->
+    req.addListener \end, !->
+      static_server.serve(req, res)
+  io = socketio.listen(app)
+  io.set('log level', 2)
+  io.disable('heartbeats')
+  app.listen(9000)
+  console.info("Server listening at http://0.0.0.0:9000/")
+
+  users = {}
+  usersToJson = -> JSON.stringify(u for nick, u in users)
+
+  io.sockets.on 'connection', !(socket) ->
+    id = Math.floor(Math.random() * 10000)
+    me =
+      nick: "Guest User #id"
+      playing: null
+      want_to_play: {}
+      socket: socket
+
+    # Add to the list of sessions
+    users[me.nick] = me
+
+    # Send the lobby list to all users
+    socket.broadcast.emit('LobbyList', usersToJson())
+    socket.emit('LobbyList', usersToJson())
+
+    socket.on 'PlayRequest', !(nick) ->
+      me.want_to_play[nick] = true
+      socket.broadcast.emit('LobbyList', usersToJson())
+      socket.emit('LobbyList', usersToJson())
+
+    socket.on 'AcceptPlayRequest', !(nick) ->
+      # now kiss! http://markwatches.net/reviews/wp-content/uploads/2012/03/fap-now-kiss-l.png
+      if (u = users[nick])? and u is not me and not u.opponent
+        u.opponent = me
+        me.opponent = u
+
+        u.playing = me.nick
+        me.playing = u.nick
+
+        me.socket.emit('StartGame', {opponent: u})
+        u.socket.emit('StartGame', {opponent: me})
+
+        socket.broadcast.emit('LobbyList', usersToJson())
+        return
+
+
+    socket.on 'UpdateNick', !(data) ->
+      delete users[me.nick]
+      me.nick = data
+      users[me.nick] = me
+      socket.broadcast.emit('LobbyList', usersToJson())
+      socket.emit('LobbyList', usersToJson())
+
+    socket.on 'StateUpdate', !(data) ->
+      me.state = data
+      me.opponent?.socket.emit 'StateUpdate', me.state
+
+    socket.on 'disconnect', !->
+      if me.opponent
+        u = me.opponent
+        u.playing = false
+        u.opponent = null
+        u.socket.emit 'YourOpponentLeftSorryBro', {really: 'sorry'}
+
+      delete users[me.nick]
+      socket.broadcast.emit 'LobbyList', usersToJson()
+

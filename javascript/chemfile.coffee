@@ -6,6 +6,9 @@ exports.libs = [
 
 exports.main = 'src/main'
 
+exports.runServer = ->
+  require('./src/server').run()
+
 exports.spritesheet =
   defaults:
     delay: 0.1

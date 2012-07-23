@@ -1,5 +1,6 @@
 #depend "chem"
 #depend "cp" bare
+#depend "socket.io/socket.io" bare
 
 {Vec2d, Engine, Sprite, Batch, Button, Sound} = Chem
 
@@ -17,6 +18,32 @@ sign = (x) ->
     0
 
 randInt = (min, max) -> Math.floor(min + Math.random() * (max - min + 1))
+
+serializeBody = (body) ->
+  position:
+    x: body.p.x
+    y: body.p.y
+  velocity:
+    x: body.vx
+    y: body.vy
+  angle: body.a
+  torque: body.t
+
+serializeShape = (shape) ->
+  body: serializeBody(shape.body)
+
+serializePinJoint = (joint) ->
+  anchr1:
+    x: joint.anchr1.x
+    y: joint.anchr1.y
+  anchr2:
+    x: joint.anchr2.x
+    y: joint.anchr2.y
+  distance: joint.dist
+
+serializeSlideJoint = (joint) ->
+  min: joint.min
+  max: joint.max
 
 Collision =
   Default: 0
@@ -196,6 +223,17 @@ class Atom extends Indexable
     @sprite.delete()
     @sprite = null
 
+  serialize: =>
+    if @marked_for_deletion
+      return null
+
+    type: 'Atom'
+    id: @id
+    shape: serializeShape(@shape)
+    flavor: @flavor_index
+    bonds: (b.id for b in @bonds)
+    rogue: @rogue
+
 class Bomb extends Indexable
   @radius = 16
   @size = new Vec2d(@radius*2, @radius*2)
@@ -220,6 +258,10 @@ class Bomb extends Indexable
     @sprite.delete()
     @sprite = null
 
+  serialize: =>
+    type: 'Bomb'
+    shape: serializeShape(@shape)
+
 class Rock extends Indexable
   @radius = 16
   @size = new Vec2d(@radius*2, @radius*2)
@@ -242,6 +284,10 @@ class Rock extends Indexable
     @space.removeBody(@shape.body)
     @sprite.delete()
     @sprite = null
+
+  serialize: =>
+    type: 'Rock'
+    shape: serializeShape(@shape)
 
 class Tank
   constructor: (@pos, @dims, @game, @tank_index) ->
@@ -601,6 +647,7 @@ class Tank
     if atoms instanceof Set
       atoms.each (atom) =>
         @explodeAtom(atom, animation_name)
+        true
     else
       for atom in atoms
         @explodeAtom(atom, animation_name)
@@ -929,7 +976,7 @@ class Tank
         @point_end.y = 0
         @point_end.x = (@point_end.y - y_intercept) / slope
 
-  respond_to_asplosion: (asplosion) =>
+  respondToAsplosion: (asplosion) =>
     [flavor, quantity] = asplosion
 
     power = quantity - @min_power
@@ -944,6 +991,184 @@ class Tank
       # rocks
       for i in [0...power]
         @dropRock()
+
+  restoreState: (data) =>
+    if @game_over
+      return
+    # destroy everything
+    # man
+    @space.removeShape(@man)
+    @space.removeBody(@man.body)
+    # atoms
+    @atoms.each (atom) ->
+      atom.cleanUp()
+      true
+    @atoms = new Set()
+    # bombs
+    @bombs.each (bomb) ->
+      bomb.cleanUp()
+      true
+    @bombs = new Set()
+    # rocks
+    @rocks.each (rock) ->
+      rock.cleanUp()
+      true
+    @rocks = new Set()
+    # claw gun
+    if @sprite_claw.visible
+      @space.removeBody(@claw.body)
+      @space.removeShape(@claw)
+      @space.removeConstraint(@claw_joint)
+    if @claw_pins?
+      @space.removeConstraint(pin) for pin in @claw_pins
+    @claw_pins_to_add = null
+    @want_to_remove_claw_pin = false
+    @want_to_retract_claw = false
+
+    # re-create everything
+    # man
+    body = data.man.shape.body
+    @initMan(Vec2d(body.position), Vec2d(body.velocity))
+
+    @mouse_pos = Vec2d(data.mouse_pos)
+    atoms_by_id = {}
+    for obj in data.objects
+      if not obj?
+        continue
+
+      # atoms
+      if obj.type is 'Atom'
+        body = obj.shape.body
+        pos = Vec2d(body.position)
+        vel = Vec2d(body.velocity)
+        flavor = obj.flavor
+        sprite = Sprite(@game.atom_imgs[flavor], batch: @game.batch, group: @game.group_main)
+        atom = new Atom(pos, flavor, sprite, @space)
+        atom.shape.body.setPos(pos)
+        atom.shape.body.setVelocity(vel)
+        atom.shape.body.setAngle(body.angle)
+        atom.shape.body.t = body.torque
+        if obj.rogue
+          atom.rogue = true
+          @space.removeBody(atom.shape.body)
+          @ray_atom = atom
+        atom.in_id = obj.id
+        atom.in_bonds = obj.bonds
+        atoms_by_id[atom.in_id] = atom
+        @atoms.add(atom)
+      else if obj.type is 'Bomb'
+        body = obj.shape.body
+        pos = Vec2d(body.position)
+        vel = Vec2d(body.velocity)
+        sprite = Sprite('bomb', batch: @game.batch, group: @game.group_main)
+        bomb = new Bomb(pos, sprite, @space, 99)
+        bomb.shape.body.setPos(pos)
+        bomb.shape.body.setVelocity(vel)
+        bomb.shape.body.setAngle(body.angle)
+        bomb.shape.body.t = body.torque
+        @bombs.add(bomb)
+      else if obj.type is 'Rock'
+        body = obj.shape.body
+        pos = Vec2d(body.position)
+        vel = Vec2d(body.velocity)
+        sprite = Sprite('rock', batch: @game.batch, group: @game.group_main)
+        rock = new Rock(pos, sprite, @space)
+        rock.shape.body.setPos(pos)
+        rock.shape.body.setVelocity(vel)
+        rock.shape.body.setAngle(body.angle)
+        rock.shape.body.t = body.torque
+        @rocks.add(rock)
+
+    @atoms.each (atom) ->
+      for bond_id in atom.in_bonds
+        try
+          atom.bond_to(atoms_by_id[bond_id])
+        catch err
+          console.error("warn: keyerror for bonds")
+      true
+
+    # state vars
+    @points = data.points
+
+    winner = data.winner
+    if not @winner? and winner?
+      if winner
+        @lose()
+      else
+        @win()
+
+    @equipped_gun = data.equipped_gun
+
+    # claw
+    @claw_in_motion = data.claw_in_motion
+    @sprite_claw.visible = data.claw_visible
+    in_claw_pins = data.claw_pins
+    @claw_attached = data.claw_attached
+    if @claw_in_motion
+      in_body = data.claw.body
+      # create claw
+      body = new cp.Body(5, 1000000)
+      body.setPos(Vec2d(in_body.position))
+      body.setAngle(in_body.angle)
+      body.setVelocity(Vec2d(in_body.velocity))
+      @claw = new cp.CircleShape(body, @claw_radius, Vec2d())
+      @claw.u = 1
+      @claw.e = 0
+      @claw.collision_type = Collision.Claw
+      @claw_joint = new cp.SlideJoint(@claw.body, @man.body, Vec2d(), Vec2d(), 0, data.claw_joint.max)
+      @claw_joint.maxBias = max_bias
+      @space.addBody(body)
+      @space.addShape(@claw)
+      @space.addConstraint(@claw_joint)
+    if not in_claw_pins?
+      @claw_pins = null
+    else
+      @claw_pins = []
+      for in_joint in in_claw_pins
+        joint = new cp.PinJoint(@claw.body, @ceiling.body, Vec2d(), Vec2d())
+        joint.maxBias = max_bias
+        @claw_pins.push(joint)
+        @space.addConstraint(joint)
+
+    # weapon drops
+    for asplosion in data.queued_asplosions
+      @other_tank.respondToAsplosion(asplosion)
+
+  serializeState: =>
+    objects = []
+    @atoms.each (atom) =>
+      objects.push(atom)
+      true
+    @bombs.each (bomb) =>
+      objects.push(bomb)
+      true
+    @rocks.each (rock) =>
+      objects.push(rock)
+      true
+    state =
+      objects: (obj.serialize() for obj in objects)
+      man:
+        shape: serializeShape(@man)
+      mouse_pos:
+        x: @mouse_pos.x
+        y: @mouse_pos.y
+      points: @points
+      winner: @winner
+      equipped_gun: @equipped_gun
+      claw_pins: null
+      claw_in_motion: @claw_in_motion
+      claw_visible: @sprite_claw.visible
+      claw_attached: @claw_attached
+      claw: null
+      queued_asplosions: @queued_asplosions
+    if not @claw_pins?
+      state.claw_pins = (serializePinJoint(joint) for joint in @claw_pins)
+    if @sprite_claw.visible
+      state.claw = serializeShape(@claw)
+      state.claw_joint = serializeSlideJoint(@claw_joint)
+    @queued_asplosions = []
+
+    return state
 
   moveSprites: =>
     # drawable things
@@ -1080,6 +1305,13 @@ class Game
       @enemy_tank.enable_point_calculation = false
       @enemy_tank.sfx_enabled = false
 
+      @server.on 'StateUpdate', (data) =>
+        @enemy_tank.restoreState(JSON.parse(data))
+      @server.on 'YourOpponentLeftSorryBro', (data) =>
+        console.log("you win - your opponent disconnected.")
+        @control_tank.win()
+
+
 
 
     @engine.on 'draw', @draw
@@ -1089,6 +1321,7 @@ class Game
 
     @state_render_timeout = 0.3
     @next_state_render = @state_render_timeout
+
 
 
 
@@ -1121,16 +1354,7 @@ class Game
       if @next_state_render <= 0
         @next_state_render = @state_render_timeout
 
-        @server.send_msg("StateUpdate", @control_tank.serialize_state())
-
-        # get all server messages
-        for [msg_name, data] in @server.get_messages()
-          if msg_name is 'StateUpdate'
-            @enemy_tank.restore_state(data)
-          else if msg_name is 'YourOpponentLeftSorryBro'
-            print("you win - your opponent disconnected.")
-            @control_tank.win()
-
+        @server.emit 'StatusUpdate', JSON.stringify(@control_tank.serializeState())
 
   draw: (context) =>
     context.fillStyle = '#000000'
@@ -1236,10 +1460,16 @@ class Title
 
       # guess a good nick
       @nick = "Guest #{randInt(1, 99999)}"
-      @server.send_msg("UpdateNick", @nick)
+      @server.emit 'UpdateNick', @nick
       @my_nick_label = pyglet.text.Label(@nick, font_size=16, x=748, y=137)
 
       @challenged = {}
+
+      @server.on 'LobbyList', (data) =>
+        @users = JSON.parse(data)
+        @createLabels()
+      @server.on 'StartGame', (data) =>
+        @gw.play()
 
   createLabels: =>
     @labels = []
@@ -1267,14 +1497,6 @@ class Title
       @labels.push(label)
 
   update: (dt) =>
-    if @server?
-      for [name, payload] in server.get_messages()
-        if name is 'LobbyList'
-          @users = payload
-          @createLabels()
-        else if name is 'StartGame'
-          @gw.play()
-          return
 
   draw: =>
     @engine.draw @batch
@@ -1315,9 +1537,9 @@ class Title
 
           if not user['playing']
             if @nick in user['want_to_play']
-              @server.send_msg("AcceptPlayRequest", nick)
+              @server.emit 'AcceptPlayRequest', nick
             else
-              @server.send_msg("PlayRequest", nick)
+              @server.emit 'PlayRequest', nick
               @challenged[nick] = true
               @createLabels()
           return
@@ -1336,8 +1558,9 @@ for prop, val of Vec2d.prototype
 
 canvas = document.getElementById("game")
 Chem.onReady ->
+  socket = io.connect()
   engine = new Engine(canvas)
-  w = new GameWindow(engine, null)
+  w = new GameWindow(engine, socket)
   w.title()
   engine.start()
   canvas.focus()
