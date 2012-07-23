@@ -1,7 +1,7 @@
 #depend "chem"
 #depend "cp" bare
 
-{Vec2d, Engine, Sprite, Batch, Button} = Chem
+{Vec2d, Engine, Sprite, Batch, Button, Sound} = Chem
 
 atom_size = new Vec2d(32, 32)
 atom_radius = atom_size.x / 2
@@ -1025,19 +1025,19 @@ class Game
 
     if not params.nofx?
       @sfx = {
-        'jump': new Audio('sfx/jump__dave-des__fast-simple-chop-5.ogg'),
-        'atom_hit_atom': new Audio('sfx/atomscolide__batchku__colide-18-005.ogg'),
-        'ray': new Audio('sfx/raygun__owyheesound__decelerate-discharge.ogg'),
-        'lazer': new Audio('sfx/lazer__supraliminal__laser-short.ogg'),
-        'merge': new Audio('sfx/atomsmerge__tigersound__disappear.ogg'),
-        'bond': new Audio('sfx/bond.ogg'),
-        'victory': new Audio('sfx/victory__iut-paris8__labbefabrice-2011-01.ogg'),
-        'defeat': new Audio('sfx/defeat__freqman__lostspace.ogg'),
-        'switch_weapon': new Audio('sfx/switchweapons__erdie__metallic-weapon-low.ogg'),
-        'explode': new Audio('sfx/atomsexplode3-1.ogg'),
-        'claw_hit': new Audio('sfx/shootingtheclaw__smcameron__rocks2.ogg'),
-        'shoot_claw': new Audio('sfx/landonsurface__juskiddink__thud-dry.ogg'),
-        'retract': new Audio('sfx/clawcomesback__simon-rue__studs-moln-v4.ogg'),
+        'jump': Sound('sfx/jump__dave-des__fast-simple-chop-5.ogg'),
+        'atom_hit_atom': Sound('sfx/atomscolide__batchku__colide-18-005.ogg'),
+        'ray': Sound('sfx/raygun__owyheesound__decelerate-discharge.ogg'),
+        'lazer': Sound('sfx/lazer__supraliminal__laser-short.ogg'),
+        'merge': Sound('sfx/atomsmerge__tigersound__disappear.ogg'),
+        'bond': Sound('sfx/bond.ogg'),
+        'victory': Sound('sfx/victory__iut-paris8__labbefabrice-2011-01.ogg'),
+        'defeat': Sound('sfx/defeat__freqman__lostspace.ogg'),
+        'switch_weapon': Sound('sfx/switchweapons__erdie__metallic-weapon-low.ogg'),
+        'explode': Sound('sfx/atomsexplode3-1.ogg'),
+        'claw_hit': Sound('sfx/shootingtheclaw__smcameron__rocks2.ogg'),
+        'shoot_claw': Sound('sfx/landonsurface__juskiddink__thud-dry.ogg'),
+        'retract': Sound('sfx/clawcomesback__simon-rue__studs-moln-v4.ogg'),
       }
     else
       @sfx = null
