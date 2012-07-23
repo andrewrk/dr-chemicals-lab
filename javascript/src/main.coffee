@@ -598,8 +598,12 @@ class Tank
 
 
   explodeAtoms: (atoms, animation_name="asplosion") =>
-    for atom in atoms
-      @explodeAtom(atom, animation_name)
+    if atoms instanceof Set
+      atoms.each (atom) =>
+        @explodeAtom(atom, animation_name)
+    else
+      for atom in atoms
+        @explodeAtom(atom, animation_name)
 
   processInput: (dt) =>
     if @game_over
