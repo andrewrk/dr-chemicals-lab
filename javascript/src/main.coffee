@@ -1,9 +1,9 @@
-#depend "chem"
-#depend "cp" bare
+chem = require('chem')
+cp = require('chipmunk')
 
-{Vec2d, Engine, Sprite, Batch, Button, Sound} = Chem
+{vec2d, Engine, Sprite, Batch, button, Sound} = chem
 
-atom_size = new Vec2d(32, 32)
+atom_size = vec2d(32, 32)
 atom_radius = atom_size.x / 2
 
 max_bias = 400
@@ -126,7 +126,7 @@ class Atom extends Indexable
     super
     body = new cp.Body(10, 100000)
     body.setPos pos
-    @shape = new cp.CircleShape(body, atom_radius, new Vec2d())
+    @shape = new cp.CircleShape(body, atom_radius, vec2d())
     @shape.setFriction 0.5
     @shape.setElasticity 0.05
     @shape.collision_type = Collision.Atom
@@ -150,7 +150,7 @@ class Atom extends Indexable
     if @flavor_index isnt other.flavor_index
       return false
 
-    joint = new cp.PinJoint(@shape.body, other.shape.body, Vec2d(), Vec2d())
+    joint = new cp.PinJoint(@shape.body, other.shape.body, vec2d(), vec2d())
     joint.dist = atom_radius * 2.5
     joint.maxBias = max_bias
     @bonds.set other, joint
@@ -198,13 +198,13 @@ class Atom extends Indexable
 
 class Bomb extends Indexable
   @radius = 16
-  @size = new Vec2d(@radius*2, @radius*2)
+  @size = vec2d(@radius*2, @radius*2)
 
   constructor: (pos, @sprite, @space, @timeout) ->
     super
     body = new cp.Body(50, 10)
     body.setPos pos
-    @shape = new cp.CircleShape(body, Bomb.radius, new Vec2d())
+    @shape = new cp.CircleShape(body, Bomb.radius, vec2d())
     @shape.setFriction 0.7
     @shape.setElasticity 0.02
     @shape.collision_type = Collision.Default
@@ -222,13 +222,13 @@ class Bomb extends Indexable
 
 class Rock extends Indexable
   @radius = 16
-  @size = new Vec2d(@radius*2, @radius*2)
+  @size = vec2d(@radius*2, @radius*2)
 
   constructor: (pos, @sprite, @space) ->
     super
     body = new cp.Body(70, 100000)
     body.setPos pos
-    @shape = new cp.CircleShape(body, Rock.radius, new Vec2d())
+    @shape = new cp.CircleShape(body, Rock.radius, vec2d())
     @shape.setFriction 0.9
     @shape.setElasticity 0.01
     @shape.collision_type = Collision.Default
@@ -255,20 +255,20 @@ class Tank
 
     @min_power = params.power or 3
 
-    @sprite_arm = new Sprite('arm', batch: @game.batch, z_order: @game.group_fg)
-    @sprite_man = new Sprite('still', batch: @game.batch, z_order: @game.group_main)
-    @sprite_claw = new Sprite('claw', batch: @game.batch, z_order: @game.group_main)
+    @sprite_arm = new Sprite('arm', batch: @game.batch, zOrder: @game.group_fg)
+    @sprite_man = new Sprite('still', batch: @game.batch, zOrder: @game.group_main)
+    @sprite_claw = new Sprite('claw', batch: @game.batch, zOrder: @game.group_main)
 
     @space = new cp.Space()
-    @space.gravity = new Vec2d(0, -400)
+    @space.gravity = vec2d(0, -400)
     @space.damping = 0.99
     @space.addCollisionHandler(Collision.Claw, Collision.Default, null, null, @clawHitSomething)
     @space.addCollisionHandler(Collision.Claw, Collision.Atom, null, null, @clawHitSomething)
     @space.addCollisionHandler(Collision.Atom, Collision.Atom, null, null, @atomHitAtom)
 
     @initControls()
-    @mouse_pos = new Vec2d(0, 0)
-    @man_dims = new Vec2d(1, 2)
+    @mousePos = vec2d(0, 0)
+    @man_dims = vec2d(1, 2)
     @man_size = @man_dims.times(atom_size)
 
     @time_between_drops = params.fastatoms or 1
@@ -280,7 +280,7 @@ class Tank
     @initMan()
 
     @initGuns()
-    @arm_offset = new Vec2d(13, 43)
+    @arm_offset = vec2d(13, 43)
     @arm_len = 24
     @computeArmPos()
 
@@ -297,13 +297,13 @@ class Tank
     @points = 0
     @points_to_crush = 50
 
-    @point_end = new Vec2d(0.000001, 0.000001)
+    @point_end = vec2d(0.000001, 0.000001)
     
     # if you have this many atoms per tank y or more, you lose
     @lose_ratio = 95 / 300
 
     @tank_index ?= randInt(0, 1)
-    @sprite_tank = new Sprite("tank#{@tank_index}", batch:@game.batch, z_order:@game.group_main)
+    @sprite_tank = new Sprite("tank#{@tank_index}", batch:@game.batch, zOrder:@game.group_main)
 
     @game_over = false
     @winner = null
@@ -335,28 +335,28 @@ class Tank
 
   initControls: =>
     @controls = {}
-    @controls[Button.Key_A] = Control.MoveLeft
-    @controls[Button.Key_D] = Control.MoveRight
-    @controls[Button.Key_W] = Control.MoveUp
-    @controls[Button.Key_S] = Control.MoveDown
+    @controls[button.KeyA] = Control.MoveLeft
+    @controls[button.KeyD] = Control.MoveRight
+    @controls[button.KeyW] = Control.MoveUp
+    @controls[button.KeyS] = Control.MoveDown
 
-    @controls[Button.Key_1] = Control.SwitchToGrapple
-    @controls[Button.Key_2] = Control.SwitchToRay
-    @controls[Button.Key_3] = Control.SwitchToLazer
+    @controls[button.Key1] = Control.SwitchToGrapple
+    @controls[button.Key2] = Control.SwitchToRay
+    @controls[button.Key3] = Control.SwitchToLazer
 
-    @controls[Button.Mouse_Left] = Control.FireMain
-    @controls[Button.Mouse_Right] = Control.FireAlt
+    @controls[button.MouseLeft] = Control.FireMain
+    @controls[button.MouseRight] = Control.FireAlt
 
     if params.keyboard is 'dvorak'
-      @controls[Button.Key_A] = Control.MoveLeft
-      @controls[Button.Key_E] = Control.MoveRight
-      @controls[Button.Key_Comma] = Control.MoveUp
-      @controls[Button.Key_S] = Control.MoveDown
+      @controls[button.KeyA] = Control.MoveLeft
+      @controls[button.KeyE] = Control.MoveRight
+      @controls[button.KeyComma] = Control.MoveUp
+      @controls[button.KeyS] = Control.MoveDown
     else if params.keyboard is 'colemak'
-      @controls[Button.Key_A] = Control.MoveLeft
-      @controls[Button.Key_S] = Control.MoveRight
-      @controls[Button.Key_W] = Control.MoveUp
-      @controls[Button.Key_R] = Control.MoveDown
+      @controls[button.KeyA] = Control.MoveLeft
+      @controls[button.KeyS] = Control.MoveRight
+      @controls[button.KeyW] = Control.MoveUp
+      @controls[button.KeyR] = Control.MoveDown
 
     @let_go_of_fire_main = true
     @let_go_of_fire_alt = true
@@ -384,14 +384,14 @@ class Tank
           direction = vector.normalized()
           power = 6000
           damp = 1 - dist / 800
-          body.applyImpulse(direction.scaled(power * damp), new Vec2d(0,0))
+          body.applyImpulse(direction.scaled(power * damp), vec2d(0,0))
 
         # explosion animation
-        sprite = new Sprite("bombsplode", batch:@game.batch, z_order:@game.group_fg)
+        sprite = new Sprite("bombsplode", batch:@game.batch, zOrder:@game.group_fg)
         sprite.pos = @pos.plus(bomb.shape.body.p)
         sprite.pos.y = 600 - sprite.pos.y
         removeBombSprite = null
-        sprite.on "animation_end", do (sprite) => => sprite.delete()
+        sprite.on "animationend", do (sprite) => => sprite.delete()
         @removeBomb(bomb)
 
         @playSfx("explode")
@@ -440,11 +440,11 @@ class Tank
     r = 50
     borders = [
       # right wall
-      [new Vec2d(@size.x + r, @size.y), new Vec2d(@size.x + r, 0)],
+      [vec2d(@size.x + r, @size.y), vec2d(@size.x + r, 0)],
       # bottom wall
-      [new Vec2d(@size.x, -r), new Vec2d(0, -r)],
+      [vec2d(@size.x, -r), vec2d(0, -r)],
       # left wall
-      [new Vec2d(-r, 0), new Vec2d(-r, @size.y)],
+      [vec2d(-r, 0), vec2d(-r, @size.y)],
     ]
     for [p1, p2] in borders
       body = new cp.Body(Infinity, Infinity)
@@ -459,7 +459,7 @@ class Tank
   initCeiling: =>
     # physics for ceiling
     body = new cp.Body(10000, 100000)
-    body.setPos new Vec2d(@size.x / 2, @size.y * 1.5)
+    body.setPos vec2d(@size.x / 2, @size.y * 1.5)
     @ceiling = new cp.BoxShape(body, @size.x, @size.y)
     @ceiling.collision_type = Collision.Default
     @space.addShape(@ceiling)
@@ -485,19 +485,19 @@ class Tank
     new_sign = sign(target_y - new_y)
     if direction is -new_sign
       # close enough to just set
-      @ceiling.body.setPos new Vec2d(@ceiling.body.p.x, target_y)
+      @ceiling.body.setPos vec2d(@ceiling.body.p.x, target_y)
     else
-      @ceiling.body.setPos new Vec2d(@ceiling.body.p.x, new_y)
+      @ceiling.body.setPos vec2d(@ceiling.body.p.x, new_y)
 
   initMan: (pos, vel) =>
     if not pos?
-      pos = new Vec2d(@size.x / 2, @man_size.y / 2)
+      pos = vec2d(@size.x / 2, @man_size.y / 2)
     if not vel?
-      vel = new Vec2d(0, 0)
+      vel = vec2d(0, 0)
     # physics for man
     shape = new cp.BoxShape(new cp.Body(20, 10000000), @man_size.x, @man_size.y)
     shape.body.setPos pos
-    shape.body.setVelocity(vel)
+    shape.body.setVel(vel)
     shape.body.w_limit = 0
     @man_angle = shape.body.a
     shape.setElasticity 0
@@ -510,11 +510,11 @@ class Tank
 
   computeArmPos: =>
     @arm_pos = @man.body.p.minus(@man_size.scaled(0.5)).plus(@arm_offset)
-    @point_vector = (@mouse_pos.minus(@arm_pos)).normalized()
+    @point_vector = (@mousePos.minus(@arm_pos)).normalized()
     @point_start = @arm_pos.plus(@point_vector.scaled(@arm_len))
 
   getDropPos: (size) =>
-    return new Vec2d(
+    return vec2d(
       Math.random() * (@size.x - size.x) + size.x / 2,
       @ceiling.body.p.y - @size.y / 2 - size.y / 2,
     )
@@ -523,7 +523,7 @@ class Tank
   dropBomb: =>
     # drop a bomb
     pos = @getDropPos(Bomb.size)
-    sprite = new Sprite('bomb', batch: @game.batch, z_order: @game.group_main)
+    sprite = new Sprite('bomb', batch: @game.batch, zOrder: @game.group_main)
     timeout = randInt(1, 5)
     bomb = new Bomb(pos, sprite, @space, timeout)
     @bombs.add(bomb)
@@ -531,7 +531,7 @@ class Tank
   dropRock: =>
     # drop a rock
     pos = @getDropPos(Rock.size)
-    sprite = new Sprite('rock', batch: @game.batch, z_order: @game.group_main)
+    sprite = new Sprite('rock', batch: @game.batch, zOrder: @game.group_main)
     rock = new Rock(pos, sprite, @space)
     @rocks.add(rock)
 
@@ -544,7 +544,7 @@ class Tank
       # drop a random atom
       flavor_index = randInt(0, Atom.flavor_count-1)
       pos = @getDropPos(atom_size)
-      atom = new Atom(pos, flavor_index, new Sprite(@game.atom_imgs[flavor_index], batch: @game.batch, z_order: @game.group_main), @space)
+      atom = new Atom(pos, flavor_index, new Sprite(@game.atom_imgs[flavor_index], batch: @game.batch, zOrder: @game.group_main), @space)
       @atoms.add(atom)
 
 
@@ -584,7 +584,7 @@ class Tank
 
     @playSfx("victory")
 
-  explodeAtom: (atom, animation_name="asplosion") =>
+  explodeAtom: (atom, animationName="asplosion") =>
     if atom is @ray_atom
       @ray_atom = null
     if @claw_pins? and @claw_pins[0].b is atom.shape.body
@@ -592,18 +592,18 @@ class Tank
     atom.marked_for_deletion = true
     clearSprite = =>
       @removeAtom(atom)
-    atom.sprite.setAnimationName animation_name
+    atom.sprite.setAnimationName animationName
     atom.sprite.setFrameIndex(0)
-    atom.sprite.on("animation_end", clearSprite)
+    atom.sprite.on("animationend", clearSprite)
 
 
-  explodeAtoms: (atoms, animation_name="asplosion") =>
+  explodeAtoms: (atoms, animationName="asplosion") =>
     if atoms instanceof Set
       atoms.each (atom) =>
-        @explodeAtom(atom, animation_name)
+        @explodeAtom(atom, animationName)
     else
       for atom in atoms
-        @explodeAtom(atom, animation_name)
+        @explodeAtom(atom, animationName)
 
   processInput: (dt) =>
     if @game_over
@@ -633,41 +633,41 @@ class Tank
     move_right = @control_state[Control.MoveRight] and not @control_state[Control.MoveLeft]
     if move_left
       if @man.body.vx >= -max_speed and @man.body.p.x - @man_size.x / 2 - 5 > 0
-        @man.body.applyImpulse(new Vec2d(-move_force, 0), new Vec2d(0, 0))
+        @man.body.applyImpulse(vec2d(-move_force, 0), vec2d(0, 0))
         if @man.body.vx > -move_boost and @man.body.vx < 0
           @man.body.vx = -move_boost
     else if move_right
       if @man.body.vx <= max_speed and @man.body.p.x + @man_size.x / 2 + 3 < @size.x
-        @man.body.applyImpulse(new Vec2d(move_force, 0), new Vec2d(0, 0))
+        @man.body.applyImpulse(vec2d(move_force, 0), vec2d(0, 0))
         if @man.body.vx < move_boost and @man.body.vx > 0
           @man.body.vx = move_boost
 
-    flip = if @mouse_pos.x < @man.body.p.x then -1 else 1
+    flip = if @mousePos.x < @man.body.p.x then -1 else 1
     @sprite_arm.scale.x = @sprite_man.scale.x = flip
 
     # jumping
     if grounded
       if move_left or move_right
-        animation_name = "walk"
+        animationName = "walk"
       else
-        animation_name = "still"
+        animationName = "still"
     else
-      animation_name = "jump"
+      animationName = "jump"
 
     if @control_state[Control.MoveUp] and grounded
-      animation_name = "jump"
-      @sprite_man.setAnimationName(animation_name)
+      animationName = "jump"
+      @sprite_man.setAnimationName(animationName)
       @sprite_man.setFrameIndex(0)
       @man.body.vy = 100
-      @man.body.applyImpulse(new Vec2d(0, 2000), new Vec2d(0, 0))
+      @man.body.applyImpulse(vec2d(0, 2000), vec2d(0, 0))
       # apply a reverse force upon the atom we jumped from
       power = 1000 / ground_shapes.length
       for shape in ground_shapes
-        shape.body.applyImpulse(new Vec2d(0, -power), new Vec2d(0, 0))
+        shape.body.applyImpulse(vec2d(0, -power), vec2d(0, 0))
       @playSfx('jump')
 
     # point the man+arm in direction of mouse
-    @sprite_man.setAnimationName animation_name
+    @sprite_man.setAnimationName animationName
 
     # selecting a different gun
     if @control_state[Control.SwitchToGrapple] and @equipped_gun isnt Control.SwitchToGrapple
@@ -699,14 +699,14 @@ class Tank
         @claw_in_motion = true
         @sprite_claw.setVisible true
         body = new cp.Body(5, 1000000)
-        body.setPos new Vec2d(@point_start)
+        body.setPos vec2d(@point_start)
         body.setAngle @point_vector.angle()
-        body.setVelocity Vec2d(@man.body.vx, @man.body.vy).plus(@point_vector.scaled(@claw_shoot_speed))
-        @claw = new cp.CircleShape(body, @claw_radius, new Vec2d())
+        body.setVel vec2d(@man.body.vx, @man.body.vy).plus(@point_vector.scaled(@claw_shoot_speed))
+        @claw = new cp.CircleShape(body, @claw_radius, vec2d())
         @claw.setFriction 1
         @claw.setElasticity 0
         @claw.collision_type = Collision.Claw
-        @claw_joint = new cp.SlideJoint(@claw.body, @man.body, new Vec2d(0, 0), new Vec2d(0, 0), 0, @size.length())
+        @claw_joint = new cp.SlideJoint(@claw.body, @man.body, vec2d(0, 0), vec2d(0, 0), 0, @size.length())
         @claw_joint.maxBias = max_bias
         @space.addBody(body)
         @space.addShape(@claw)
@@ -781,10 +781,10 @@ class Tank
         @ray_atom.rogue = false
         if @control_state[Control.FireMain]
           # shoot it!!
-          @ray_atom.shape.body.setVelocity Vec2d(@man.body.vx, @man.body.vy).plus(@point_vector.scaled(@ray_shoot_speed))
+          @ray_atom.shape.body.setVel vec2d(@man.body.vx, @man.body.vy).plus(@point_vector.scaled(@ray_shoot_speed))
           @playSfx('lazer')
         else
-          @ray_atom.shape.body.setVelocity(Vec2d(@man.body.vx, @man.body.vy))
+          @ray_atom.shape.body.setVel(vec2d(@man.body.vx, @man.body.vy))
         @ray_atom = null
         @let_go_of_fire_main = false
 
@@ -833,14 +833,14 @@ class Tank
     # bolt these bodies together
     claw = arbiter.a
     shape = arbiter.b
-    pos = new Vec2d(arbiter.contacts[0].p)
+    pos = vec2d(arbiter.contacts[0].p)
     shape_anchor = pos.minus(shape.body.p)
     claw_anchor = pos.minus(claw.body.p)
     claw_delta = claw_anchor.normalized().scaled(-(@claw_radius + 8))
     @claw.body.setPos @claw.body.p.plus(claw_delta)
     @claw_pins_to_add = [
       new cp.PinJoint(claw.body, shape.body, claw_anchor, shape_anchor),
-      new cp.PinJoint(claw.body, shape.body, new Vec2d(0, 0), new Vec2d(0, 0)),
+      new cp.PinJoint(claw.body, shape.body, vec2d(0, 0), vec2d(0, 0)),
     ]
     for claw_pin in @claw_pins_to_add
       claw_pin.maxBias = max_bias
@@ -962,8 +962,8 @@ class Tank
 
     @sprite_arm.pos = @arm_pos.plus(@pos)
     @sprite_arm.pos.y = 600 - @sprite_arm.pos.y
-    @sprite_arm.rotation = -@mouse_pos.minus(@man.body.p).angle()
-    if @mouse_pos.x < @man.body.p.x
+    @sprite_arm.rotation = -@mousePos.minus(@man.body.p).angle()
+    if @mousePos.x < @man.body.p.x
       @sprite_arm.rotation = Math.PI - @sprite_arm.rotation
 
     @sprite_tank.pos = @pos.plus(@ceiling.body.p)
@@ -1022,36 +1022,36 @@ class Game
     @group_main = 1
     @group_fg = 2
 
-    @sprite_bg = new Sprite("bg", batch: @batch, z_order: @group_bg)
-    @sprite_bg_top = new Sprite("bg_top", batch: @batch, z_order: @group_fg)
+    @sprite_bg = new Sprite("bg", batch: @batch, zOrder: @group_bg)
+    @sprite_bg_top = new Sprite("bg_top", batch: @batch, zOrder: @group_fg)
 
     @atom_imgs = ("atom#{i}" for i in [0...Atom.flavor_count])
 
     if not params.nofx?
       @sfx = {
-        'jump': Sound('sfx/jump__dave-des__fast-simple-chop-5.ogg'),
-        'atom_hit_atom': Sound('sfx/atomscolide__batchku__colide-18-005.ogg'),
-        'ray': Sound('sfx/raygun__owyheesound__decelerate-discharge.ogg'),
-        'lazer': Sound('sfx/lazer__supraliminal__laser-short.ogg'),
-        'merge': Sound('sfx/atomsmerge__tigersound__disappear.ogg'),
-        'bond': Sound('sfx/bond.ogg'),
-        'victory': Sound('sfx/victory__iut-paris8__labbefabrice-2011-01.ogg'),
-        'defeat': Sound('sfx/defeat__freqman__lostspace.ogg'),
-        'switch_weapon': Sound('sfx/switchweapons__erdie__metallic-weapon-low.ogg'),
-        'explode': Sound('sfx/atomsexplode3-1.ogg'),
-        'claw_hit': Sound('sfx/shootingtheclaw__smcameron__rocks2.ogg'),
-        'shoot_claw': Sound('sfx/landonsurface__juskiddink__thud-dry.ogg'),
-        'retract': Sound('sfx/clawcomesback__simon-rue__studs-moln-v4.ogg'),
+        'jump': new Sound('sfx/jump__dave-des__fast-simple-chop-5.ogg'),
+        'atom_hit_atom': new Sound('sfx/atomscolide__batchku__colide-18-005.ogg'),
+        'ray': new Sound('sfx/raygun__owyheesound__decelerate-discharge.ogg'),
+        'lazer': new Sound('sfx/lazer__supraliminal__laser-short.ogg'),
+        'merge': new Sound('sfx/atomsmerge__tigersound__disappear.ogg'),
+        'bond': new Sound('sfx/bond.ogg'),
+        'victory': new Sound('sfx/victory__iut-paris8__labbefabrice-2011-01.ogg'),
+        'defeat': new Sound('sfx/defeat__freqman__lostspace.ogg'),
+        'switch_weapon': new Sound('sfx/switchweapons__erdie__metallic-weapon-low.ogg'),
+        'explode': new Sound('sfx/atomsexplode3-1.ogg'),
+        'claw_hit': new Sound('sfx/shootingtheclaw__smcameron__rocks2.ogg'),
+        'shoot_claw': new Sound('sfx/landonsurface__juskiddink__thud-dry.ogg'),
+        'retract': new Sound('sfx/clawcomesback__simon-rue__studs-moln-v4.ogg'),
       }
     else
       @sfx = null
 
     @fps_display = params.fps?
 
-    tank_dims = new Vec2d(12, 16)
+    tank_dims = vec2d(12, 16)
     tank_pos = [
-      new Vec2d(109, 41),
-      new Vec2d(531, 41),
+      vec2d(109, 41),
+      vec2d(531, 41),
     ]
 
     if not @server?
@@ -1065,7 +1065,7 @@ class Game
 
       tank_index = 1 - @control_tank.tank_index
       tank_name = "tank#{tank_index}"
-      @sprite_other_tank = new Sprite(tank_name, batch: @batch, z_order: @group_main, pos: new Vec2d(tank_pos[1].x + @control_tank.size.x / 2, tank_pos[1].y + @control_tank.size.y / 2))
+      @sprite_other_tank = new Sprite(tank_name, batch: @batch, zOrder: @group_main, pos: vec2d(tank_pos[1].x + @control_tank.size.x / 2, tank_pos[1].y + @control_tank.size.y / 2))
       @sprite_other_tank.pos.y = 600 - @sprite_other_tank.pos.y
     else
       @tanks = (new Tank(pos, tank_dims, this, i) for pos, i in tank_pos)
@@ -1093,10 +1093,10 @@ class Game
 
 
   update: (dt) =>
-    mouse_pos = @engine.mouse_pos.clone()
-    mouse_pos.y = 600 - mouse_pos.y
+    mousePos = @engine.mousePos.clone()
+    mousePos.y = 600 - mousePos.y
     for tank in @tanks
-      tank.mouse_pos = mouse_pos.minus(tank.pos)
+      tank.mousePos = mousePos.minus(tank.pos)
       tank.update(dt)
 
     if not @server?
@@ -1219,13 +1219,13 @@ class Title
     @batch = new Batch()
     @img = new Sprite("title", batch: @batch)
 
-    @start_pos = new Vec2d(409, 600-305)
-    @credits_pos = new Vec2d(360, 600-229)
-    @controls_pos = new Vec2d(525, 600-242)
+    @start_pos = vec2d(409, 600-305)
+    @credits_pos = vec2d(360, 600-229)
+    @controls_pos = vec2d(525, 600-242)
     @click_radius = 50
 
-    @lobby_pos = new Vec2d(746, 600-203)
-    @lobby_size = new Vec2d(993.0 - @lobby_pos.x, 522.0 - @lobby_pos.y)
+    @lobby_pos = vec2d(746, 600-203)
+    @lobby_size = vec2d(993.0 - @lobby_pos.x, 522.0 - @lobby_pos.y)
 
     if @server?
       @labels = []
@@ -1284,29 +1284,29 @@ class Title
       @my_nick_label.draw()
 
   end: =>
-    @engine.removeListener 'draw', @onDraw
+    @engine.removeListener 'draw', @draw
     @engine.removeListener 'buttonup', @onButtonDown
     @engine.removeListener 'update', @update
 
   onButtonDown: (button) =>
-    click_pos = @engine.mouse_pos
-    if click_pos.distanceTo(@start_pos) < @click_radius
+    click_pos = @engine.mousePos
+    if click_pos.distance(@start_pos) < @click_radius
       @gw.play(false)
       return
-    else if click_pos.distanceTo(@credits_pos) < @click_radius
+    else if click_pos.distance(@credits_pos) < @click_radius
       @gw.credits()
       return
-    else if click_pos.distanceTo(@controls_pos) < @click_radius
+    else if click_pos.distance(@controls_pos) < @click_radius
       @gw.controls()
       return
-    else if button is Button.Key_Space
+    else if button is button.KeySpace
       @gw.play(false)
       return
 
     if @server?
       for nick, label of @nick_label
-        label_pos = new Vec2d(label.x, label.y)
-        label_size = new Vec2d(200, 18)
+        label_pos = vec2d(label.x, label.y)
+        label_size = vec2d(200, 18)
         if click_pos.x > label_pos.x and click_pos.y > label_pos.y and click_pos.x < label_pos.x + label_size.x and click_pos.y < label_pos.y + label_size.y
           user = @nick_user[nick]
           if not user?
@@ -1331,11 +1331,11 @@ params = do ->
 
 
 # monkey patch chipmunk's vector, giving it the same API as ours.
-for prop, val of Vec2d.prototype
+for prop, val of vec2d.Vec2d.prototype
   cp.Vect.prototype[prop] = val
 
 canvas = document.getElementById("game")
-Chem.onReady ->
+chem.onReady ->
   engine = new Engine(canvas)
   w = new GameWindow(engine, null)
   w.title()

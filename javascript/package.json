@@ -1,0 +1,15 @@
+{
+  "name": "dr-chemicals-lab",
+  "version": "0.0.0",
+  "description": "pyweek game ported to canvas",
+  "author": "Andrew Kelley",
+  "license": "BSD",
+  "scripts": {
+    "dev": "npm install && chem dev"
+  },
+  "dependencies": {
+    "chipmunk": "~6.1.1",
+    "chem": "~0.4.1",
+    "chem-cli": "~0.4.0"
+  }
+}

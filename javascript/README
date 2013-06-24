@@ -1,13 +1,11 @@
 developing:
 
-    sudo npm install -g chem
-    chem dev
+    npm run dev
 
 things left to fix:
 
     serialization
     multiplayer
     low framerate
-    claw can't attach to atoms
     animations starting at the wrong frame
 

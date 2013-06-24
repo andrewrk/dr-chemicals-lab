@@ -1,10 +1,6 @@
 v = (x, y) -> {x, y}
 
-exports.libs = [
-  'public/vendor'
-]
-
-exports.main = 'src/main'
+exports.main = 'src/main.coffee'
 
 exports.spritesheet =
   defaults:
