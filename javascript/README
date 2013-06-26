@@ -1,3 +1,7 @@
+latest demo:
+
+    http://s3.amazonaws.com/superjoe/temp/dr-chemicals-lab/index.html
+
 developing:
 
     npm run dev
