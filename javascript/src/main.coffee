@@ -1027,6 +1027,8 @@ class Game
 
     @atom_imgs = ("atom#{i}" for i in [0...Atom.flavor_count])
 
+    @fpsLabel = @engine.createFpsLabel()
+
     if not params.nofx?
       @sfx = {
         'jump': new Sound('sfx/jump__dave-des__fast-simple-chop-5.ogg'),
@@ -1139,13 +1141,13 @@ class Game
     for tank in @tanks
       tank.moveSprites()
 
-    @engine.draw @batch
+    @batch.draw context
 
     for tank in @tanks
       tank.drawPrimitives(context)
     
     if @fps_display
-      @engine.drawFps()
+      @fpsLabel.draw(context)
 
 class GameWindow
   constructor: (@engine, @server) ->
@@ -1181,7 +1183,7 @@ class ControlsScene
     @engine.on('buttonup', @onButtonDown)
 
   draw: (context) =>
-    @engine.draw @batch
+    @batch.draw context
 
   end: =>
     @engine.removeListener('draw', @draw)
@@ -1198,8 +1200,8 @@ class Credits
     @engine.on('draw', @draw)
     @engine.on('buttonup', @onButtonDown)
 
-  draw: =>
-    @engine.draw @batch
+  draw: (context) =>
+    @batch.draw context
 
   end: =>
     @engine.removeListener('draw', @draw)
@@ -1276,8 +1278,8 @@ class Title
           @gw.play()
           return
 
-  draw: =>
-    @engine.draw @batch
+  draw: (context) =>
+    @batch.draw context
     if @server?
       for label in @labels
         label.draw()
