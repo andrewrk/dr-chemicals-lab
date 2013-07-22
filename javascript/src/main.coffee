@@ -1337,9 +1337,10 @@ for prop, val of vec2d.Vec2d.prototype
   cp.Vect.prototype[prop] = val
 
 canvas = document.getElementById("game")
-chem.onReady ->
-  engine = new Engine(canvas)
+engine = new Engine(canvas)
+engine.showLoadProgressBar()
+engine.start()
+canvas.focus()
+chem.resources.on 'ready', ->
   w = new GameWindow(engine, null)
   w.title()
-  engine.start()
-  canvas.focus()
