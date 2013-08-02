@@ -2,6 +2,7 @@ chem = require('chem')
 cp = require('chipmunk')
 
 {vec2d, Engine, Sprite, Batch, button, Sound} = chem
+ani = chem.resources.animations
 
 atom_size = vec2d(32, 32)
 atom_radius = atom_size.x / 2
@@ -255,9 +256,9 @@ class Tank
 
     @min_power = params.power or 3
 
-    @sprite_arm = new Sprite('arm', batch: @game.batch, zOrder: @game.group_fg)
-    @sprite_man = new Sprite('still', batch: @game.batch, zOrder: @game.group_main)
-    @sprite_claw = new Sprite('claw', batch: @game.batch, zOrder: @game.group_main)
+    @sprite_arm = new Sprite(ani.arm, batch: @game.batch, zOrder: @game.group_fg)
+    @sprite_man = new Sprite(ani.still, batch: @game.batch, zOrder: @game.group_main)
+    @sprite_claw = new Sprite(ani.claw, batch: @game.batch, zOrder: @game.group_main)
 
     @space = new cp.Space()
     @space.gravity = vec2d(0, -400)
@@ -303,7 +304,7 @@ class Tank
     @lose_ratio = 95 / 300
 
     @tank_index ?= randInt(0, 1)
-    @sprite_tank = new Sprite("tank#{@tank_index}", batch:@game.batch, zOrder:@game.group_main)
+    @sprite_tank = new Sprite(ani["tank#{@tank_index}"], batch:@game.batch, zOrder:@game.group_main)
 
     @game_over = false
     @winner = null
@@ -387,7 +388,7 @@ class Tank
           body.applyImpulse(direction.scaled(power * damp), vec2d(0,0))
 
         # explosion animation
-        sprite = new Sprite("bombsplode", batch:@game.batch, zOrder:@game.group_fg)
+        sprite = new Sprite(ani.bombsplode, batch:@game.batch, zOrder:@game.group_fg)
         sprite.pos = @pos.plus(bomb.shape.body.p)
         sprite.pos.y = 600 - sprite.pos.y
         removeBombSprite = null
@@ -523,7 +524,7 @@ class Tank
   dropBomb: =>
     # drop a bomb
     pos = @getDropPos(Bomb.size)
-    sprite = new Sprite('bomb', batch: @game.batch, zOrder: @game.group_main)
+    sprite = new Sprite(ani.bomb, batch: @game.batch, zOrder: @game.group_main)
     timeout = randInt(1, 5)
     bomb = new Bomb(pos, sprite, @space, timeout)
     @bombs.add(bomb)
@@ -531,7 +532,7 @@ class Tank
   dropRock: =>
     # drop a rock
     pos = @getDropPos(Rock.size)
-    sprite = new Sprite('rock', batch: @game.batch, zOrder: @game.group_main)
+    sprite = new Sprite(ani.rock, batch: @game.batch, zOrder: @game.group_main)
     rock = new Rock(pos, sprite, @space)
     @rocks.add(rock)
 
@@ -544,7 +545,7 @@ class Tank
       # drop a random atom
       flavor_index = randInt(0, Atom.flavor_count-1)
       pos = @getDropPos(atom_size)
-      atom = new Atom(pos, flavor_index, new Sprite(@game.atom_imgs[flavor_index], batch: @game.batch, zOrder: @game.group_main), @space)
+      atom = new Atom(pos, flavor_index, new Sprite(ani[@game.atom_imgs[flavor_index]], batch: @game.batch, zOrder: @game.group_main), @space)
       @atoms.add(atom)
 
 
@@ -555,7 +556,7 @@ class Tank
     @winner = false
     @explodeAtoms(@atoms.clone(), "atomfail")
 
-    @sprite_man.setAnimationName "defeat"
+    @sprite_man.setAnimation ani.defeat
     @sprite_man.setFrameIndex(0)
     @sprite_arm.setVisible false
 
@@ -573,7 +574,7 @@ class Tank
     @winner = true
     @explodeAtoms(@atoms.clone())
 
-    @sprite_man.setAnimationName "victory"
+    @sprite_man.setAnimation ani.victory
     @sprite_man.setFrameIndex(0)
     @sprite_arm.setVisible false
 
@@ -592,7 +593,7 @@ class Tank
     atom.marked_for_deletion = true
     clearSprite = =>
       @removeAtom(atom)
-    atom.sprite.setAnimationName animationName
+    atom.sprite.setAnimation ani[animationName]
     atom.sprite.setFrameIndex(0)
     atom.sprite.on("animationend", clearSprite)
 
@@ -656,7 +657,7 @@ class Tank
 
     if @control_state[Control.MoveUp] and grounded
       animationName = "jump"
-      @sprite_man.setAnimationName(animationName)
+      @sprite_man.setAnimation(ani[animationName])
       @sprite_man.setFrameIndex(0)
       @man.body.vy = 100
       @man.body.applyImpulse(vec2d(0, 2000), vec2d(0, 0))
@@ -667,7 +668,7 @@ class Tank
       @playSfx('jump')
 
     # point the man+arm in direction of mouse
-    @sprite_man.setAnimationName animationName
+    @sprite_man.setAnimation ani[animationName]
 
     # selecting a different gun
     if @control_state[Control.SwitchToGrapple] and @equipped_gun isnt Control.SwitchToGrapple
@@ -689,7 +690,7 @@ class Tank
     else
       arm_animation = @gun_animations[@equipped_gun]
 
-    @sprite_arm.setAnimationName arm_animation
+    @sprite_arm.setAnimation ani[arm_animation]
 
     if @equipped_gun is Control.SwitchToGrapple
       claw_reel_in_speed = 400
@@ -864,7 +865,7 @@ class Tank
       return
     @claw_in_motion = false
     @sprite_claw.setVisible false
-    @sprite_arm.setAnimationName "arm"
+    @sprite_arm.setAnimation ani.arm
     @claw_attached = false
     @space.removeBody(@claw.body)
     @space.removeShape(@claw)
@@ -1022,8 +1023,8 @@ class Game
     @group_main = 1
     @group_fg = 2
 
-    @sprite_bg = new Sprite("bg", batch: @batch, zOrder: @group_bg)
-    @sprite_bg_top = new Sprite("bg_top", batch: @batch, zOrder: @group_fg)
+    @sprite_bg = new Sprite(ani.bg, batch: @batch, zOrder: @group_bg)
+    @sprite_bg_top = new Sprite(ani.bg_top, batch: @batch, zOrder: @group_fg)
 
     @atom_imgs = ("atom#{i}" for i in [0...Atom.flavor_count])
 
@@ -1067,7 +1068,7 @@ class Game
 
       tank_index = 1 - @control_tank.tank_index
       tank_name = "tank#{tank_index}"
-      @sprite_other_tank = new Sprite(tank_name, batch: @batch, zOrder: @group_main, pos: vec2d(tank_pos[1].x + @control_tank.size.x / 2, tank_pos[1].y + @control_tank.size.y / 2))
+      @sprite_other_tank = new Sprite(ani[tank_name], batch: @batch, zOrder: @group_main, pos: vec2d(tank_pos[1].x + @control_tank.size.x / 2, tank_pos[1].y + @control_tank.size.y / 2))
       @sprite_other_tank.pos.y = 600 - @sprite_other_tank.pos.y
     else
       @tanks = (new Tank(pos, tank_dims, this, i) for pos, i in tank_pos)
@@ -1178,7 +1179,7 @@ class GameWindow
 class ControlsScene
   constructor: (@gw, @engine) ->
     @batch = new Batch()
-    @img = new Sprite("howtoplay", batch: @batch)
+    @img = new Sprite(ani.howtoplay, batch: @batch)
     @engine.on('draw', @draw)
     @engine.on('buttonup', @onButtonDown)
 
@@ -1196,7 +1197,7 @@ class ControlsScene
 class Credits
   constructor: (@gw, @engine) ->
     @batch = new Batch()
-    @img = new Sprite("credits", batch: @batch)
+    @img = new Sprite(ani.credits, batch: @batch)
     @engine.on('draw', @draw)
     @engine.on('buttonup', @onButtonDown)
 
@@ -1219,7 +1220,7 @@ class Title
     @engine.on 'update', @update
 
     @batch = new Batch()
-    @img = new Sprite("title", batch: @batch)
+    @img = new Sprite(ani.title, batch: @batch)
 
     @start_pos = vec2d(409, 600-305)
     @credits_pos = vec2d(360, 600-229)
